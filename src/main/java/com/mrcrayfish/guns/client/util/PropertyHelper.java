@@ -8,6 +8,7 @@ import com.mrcrayfish.framework.api.serialize.DataType;
 import com.mrcrayfish.guns.cache.ObjectCache;
 import com.mrcrayfish.guns.client.MetaLoader;
 import com.mrcrayfish.guns.common.Gun;
+import com.mrcrayfish.guns.init.ModDataComponents;
 import com.mrcrayfish.guns.common.properties.SightAnimation;
 import com.mrcrayfish.guns.item.IMeta;
 import com.mrcrayfish.guns.item.attachment.IAttachment;
@@ -234,11 +235,10 @@ public final class PropertyHelper
 
     public static int getReticleColor(ItemStack stack)
     {
-        // Prioritise getting the reticle colour from the ItemStack tag
-        CompoundTag tag = stack.getTag();
-        if(tag != null && tag.contains("ReticleColor", Tag.TAG_INT))
+        // Prioritise getting the reticle colour from the DataComponent
+        if(stack.has(ModDataComponents.RETICLE_COLOR.get()))
         {
-            return tag.getInt("ReticleColor");
+            return stack.getOrDefault(ModDataComponents.RETICLE_COLOR.get(), 0);
         }
 
         // Attempt to get the colour from the item's meta

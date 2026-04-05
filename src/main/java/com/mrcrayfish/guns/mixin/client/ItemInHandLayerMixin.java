@@ -58,7 +58,7 @@ public class ItemInHandLayerMixin
             {
                 ci.cancel();
                 PlayerItemInHandLayer<?, ?> layer = (PlayerItemInHandLayer<?, ?>) (Object) this;
-                mrCrayfishGunMod$renderArmWithGun(layer, (Player) entity, stack, gunItem, display, hand, arm, poseStack, source, light, Minecraft.getInstance().getFrameTime());
+                mrCrayfishGunMod$renderArmWithGun(layer, (Player) entity, stack, gunItem, display, hand, arm, poseStack, source, light, Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false));
             }
         }
     }
@@ -71,7 +71,6 @@ public class ItemInHandLayerMixin
         poseStack.mulPose(Axis.XP.rotationDegrees(-90F));
         poseStack.mulPose(Axis.YP.rotationDegrees(180F));
         poseStack.translate(((float) (arm == HumanoidArm.LEFT ? -1 : 1) / 16F), 0.125, -0.625);
-        GunRenderingHandler.get().applyWeaponScale(stack, poseStack);
         Gun gun = item.getModifiedGun(stack);
         gun.getGeneral().getGripType().getHeldAnimation().applyHeldItemTransforms(player, hand, AimingHandler.get().getAimProgress(player, deltaTicks), poseStack, source);
         GunRenderingHandler.get().renderWeapon(player, stack, display, poseStack, source, light, deltaTicks);

@@ -1,0 +1,20 @@
+{
+  "type": "cgm:workbench",
+  "materials": [
+    {
+      "count": 4,
+      "ingredient": {
+        "item": "minecraft:copper_ingot"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:gunpowders"
+      }
+    }
+  ],
+  "result": {
+    "count": 32,
+    "id": "cgm:advanced_bullet"
+  }
+}

@@ -1,25 +1,31 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.client.network.ClientPlayHandler;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class S2CMessageProjectileHitEntity extends PlayMessage<S2CMessageProjectileHitEntity>
+public class S2CMessageProjectileHitEntity
 {
-    private double x;
-    private double y;
-    private double z;
-    private int type;
-    private boolean player;
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CMessageProjectileHitEntity> STREAM_CODEC = StreamCodec.of(
+            (buf, msg) -> {
+                buf.writeDouble(msg.x);
+                buf.writeDouble(msg.y);
+                buf.writeDouble(msg.z);
+                buf.writeByte(msg.type);
+                buf.writeBoolean(msg.player);
+            },
+            buf -> new S2CMessageProjectileHitEntity(
+                    buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                    buf.readByte(), buf.readBoolean()
+            )
+    );
 
-    public S2CMessageProjectileHitEntity() {}
+    private final double x;
+    private final double y;
+    private final double z;
+    private final int type;
+    private final boolean player;
 
     public S2CMessageProjectileHitEntity(double x, double y, double z, int type, boolean player)
     {
@@ -30,29 +36,7 @@ public class S2CMessageProjectileHitEntity extends PlayMessage<S2CMessageProject
         this.player = player;
     }
 
-    @Override
-    public void encode(S2CMessageProjectileHitEntity message, FriendlyByteBuf buffer)
-    {
-        buffer.writeDouble(message.x);
-        buffer.writeDouble(message.y);
-        buffer.writeDouble(message.z);
-        buffer.writeByte(message.type);
-        buffer.writeBoolean(message.player);
-    }
-
-    @Override
-    public S2CMessageProjectileHitEntity decode(FriendlyByteBuf buffer)
-    {
-        double x = buffer.readDouble();
-        double y = buffer.readDouble();
-        double z = buffer.readDouble();
-        byte type = buffer.readByte();
-        boolean player = buffer.readBoolean();
-        return new S2CMessageProjectileHitEntity(x, y, z, type, player);
-    }
-
-    @Override
-    public void handle(S2CMessageProjectileHitEntity message, MessageContext context)
+    public static void handle(S2CMessageProjectileHitEntity message, MessageContext context)
     {
         context.execute(() -> ClientPlayHandler.handleProjectileHitEntity(message));
         context.setHandled(true);

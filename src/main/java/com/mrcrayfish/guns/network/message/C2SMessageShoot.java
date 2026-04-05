@@ -1,24 +1,23 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.common.network.ServerPlayHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageShoot extends PlayMessage<C2SMessageShoot>
+public class C2SMessageShoot
 {
-    private float rotationYaw;
-    private float rotationPitch;
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageShoot> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.FLOAT, C2SMessageShoot::getRotationYaw,
+            ByteBufCodecs.FLOAT, C2SMessageShoot::getRotationPitch,
+            C2SMessageShoot::new
+    );
 
-    public C2SMessageShoot() {}
+    private final float rotationYaw;
+    private final float rotationPitch;
 
     public C2SMessageShoot(Player player)
     {
@@ -32,32 +31,15 @@ public class C2SMessageShoot extends PlayMessage<C2SMessageShoot>
         this.rotationPitch = rotationPitch;
     }
 
-    @Override
-    public void encode(C2SMessageShoot message, FriendlyByteBuf buffer)
+    public static void handle(C2SMessageShoot message, MessageContext context)
     {
-        buffer.writeFloat(message.rotationYaw);
-        buffer.writeFloat(message.rotationPitch);
-    }
-
-    @Override
-    public C2SMessageShoot decode(FriendlyByteBuf buffer)
-    {
-        float rotationYaw = buffer.readFloat();
-        float rotationPitch = buffer.readFloat();
-        return new C2SMessageShoot(rotationYaw, rotationPitch);
-    }
-
-    @Override
-    public void handle(C2SMessageShoot message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null)
+            if(p instanceof ServerPlayer player)
             {
                 ServerPlayHandler.handleShoot(message, player);
             }
-        });
+        }));
         context.setHandled(true);
     }
 

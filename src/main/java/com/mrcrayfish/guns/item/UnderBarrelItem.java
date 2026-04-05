@@ -3,8 +3,6 @@ package com.mrcrayfish.guns.item;
 import com.mrcrayfish.guns.item.attachment.IUnderBarrel;
 import com.mrcrayfish.guns.item.attachment.impl.UnderBarrel;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.Enchantments;
 
 /**
  * A basic under barrel attachment item implementation with color support
@@ -42,9 +40,4 @@ public class UnderBarrelItem extends AttachmentItem implements IUnderBarrel, ICo
         return this.colored;
     }
 
-    @Override
-    public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment)
-    {
-        return enchantment == Enchantments.BINDING_CURSE || super.canApplyAtEnchantingTable(stack, enchantment);
-    }
 }

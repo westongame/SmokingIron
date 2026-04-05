@@ -25,3 +25,9 @@ libs
 
 classes
 src/generated/resources/.cache/*
+
+# runtime
+runs
+
+# claude
+.claude

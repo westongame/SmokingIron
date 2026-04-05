@@ -3,6 +3,7 @@ package com.mrcrayfish.guns.client.handler;
 import com.mrcrayfish.guns.client.KeyBinds;
 import com.mrcrayfish.guns.common.Gun;
 import com.mrcrayfish.guns.event.GunReloadEvent;
+import com.mrcrayfish.guns.init.ModDataComponents;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
 import com.mrcrayfish.guns.item.GunItem;
 import com.mrcrayfish.guns.network.PacketHandler;
@@ -14,10 +15,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -46,11 +47,8 @@ public class ReloadHandler
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Post event)
     {
-        if(event.phase != TickEvent.Phase.END)
-            return;
-
         this.prevReloadTimer = this.reloadTimer;
 
         Player player = Minecraft.getInstance().player;
@@ -96,18 +94,17 @@ public class ReloadHandler
                 ItemStack stack = player.getMainHandItem();
                 if(stack.getItem() instanceof GunItem)
                 {
-                    CompoundTag tag = stack.getTag();
-                    if(tag != null && !tag.contains("IgnoreAmmo", Tag.TAG_BYTE))
+                    if(!stack.has(ModDataComponents.IGNORE_AMMO.get()))
                     {
                         Gun gun = ((GunItem) stack.getItem()).getModifiedGun(stack);
-                        if(tag.getInt("AmmoCount") >= GunEnchantmentHelper.getAmmoCapacity(stack, gun))
+                        if(stack.getOrDefault(ModDataComponents.AMMO_COUNT.get(), 0) >= GunEnchantmentHelper.getAmmoCapacity(stack, gun))
                             return;
-                        if(MinecraftForge.EVENT_BUS.post(new GunReloadEvent.Pre(player, stack)))
+                        if(NeoForge.EVENT_BUS.post(new GunReloadEvent.Pre(player, stack)).isCanceled())
                             return;
                         ModSyncedDataKeys.RELOADING.setValue(player, true);
                         PacketHandler.getPlayChannel().sendToServer(new C2SMessageReload(true));
                         this.reloadingSlot = player.getInventory().selected;
-                        MinecraftForge.EVENT_BUS.post(new GunReloadEvent.Post(player, stack));
+                        NeoForge.EVENT_BUS.post(new GunReloadEvent.Post(player, stack));
                     }
                 }
             }

@@ -1,27 +1,34 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.client.network.ClientPlayHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class S2CMessageProjectileHitBlock extends PlayMessage<S2CMessageProjectileHitBlock>
+public class S2CMessageProjectileHitBlock
 {
-    private double x;
-    private double y;
-    private double z;
-    private BlockPos pos;
-    private Direction face;
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CMessageProjectileHitBlock> STREAM_CODEC = StreamCodec.of(
+            (buf, msg) -> {
+                buf.writeDouble(msg.x);
+                buf.writeDouble(msg.y);
+                buf.writeDouble(msg.z);
+                buf.writeBlockPos(msg.pos);
+                buf.writeEnum(msg.face);
+            },
+            buf -> new S2CMessageProjectileHitBlock(
+                    buf.readDouble(), buf.readDouble(), buf.readDouble(),
+                    buf.readBlockPos(), buf.readEnum(Direction.class)
+            )
+    );
 
-    public S2CMessageProjectileHitBlock() {}
+    private final double x;
+    private final double y;
+    private final double z;
+    private final BlockPos pos;
+    private final Direction face;
 
     public S2CMessageProjectileHitBlock(double x, double y, double z, BlockPos pos, Direction face)
     {
@@ -32,29 +39,7 @@ public class S2CMessageProjectileHitBlock extends PlayMessage<S2CMessageProjecti
         this.face = face;
     }
 
-    @Override
-    public void encode(S2CMessageProjectileHitBlock message, FriendlyByteBuf buffer)
-    {
-        buffer.writeDouble(message.x);
-        buffer.writeDouble(message.y);
-        buffer.writeDouble(message.z);
-        buffer.writeBlockPos(message.pos);
-        buffer.writeEnum(message.face);
-    }
-
-    @Override
-    public S2CMessageProjectileHitBlock decode(FriendlyByteBuf buffer)
-    {
-        double x = buffer.readDouble();
-        double y = buffer.readDouble();
-        double z = buffer.readDouble();
-        BlockPos pos = buffer.readBlockPos();
-        Direction face = buffer.readEnum(Direction.class);
-        return new S2CMessageProjectileHitBlock(x, y, z, pos, face);
-    }
-
-    @Override
-    public void handle(S2CMessageProjectileHitBlock message, MessageContext context)
+    public static void handle(S2CMessageProjectileHitBlock message, MessageContext context)
     {
         context.execute(() -> ClientPlayHandler.handleProjectileHitBlock(message));
         context.setHandled(true);

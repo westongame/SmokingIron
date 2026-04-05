@@ -1,39 +1,27 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.common.network.ServerPlayHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageUnload extends PlayMessage<C2SMessageUnload>
+public class C2SMessageUnload
 {
-    @Override
-    public void encode(C2SMessageUnload message, FriendlyByteBuf buffer) {}
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageUnload> STREAM_CODEC = StreamCodec.of(
+            (buf, msg) -> {},
+            buf -> new C2SMessageUnload()
+    );
 
-    @Override
-    public C2SMessageUnload decode(FriendlyByteBuf buffer)
+    public static void handle(C2SMessageUnload message, MessageContext context)
     {
-        return new C2SMessageUnload();
-    }
-
-    @Override
-    public void handle(C2SMessageUnload message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null && !player.isSpectator())
+            if(p instanceof ServerPlayer player && !player.isSpectator())
             {
                 ServerPlayHandler.handleUnload(player);
             }
-        });
+        }));
         context.setHandled(true);
     }
 }

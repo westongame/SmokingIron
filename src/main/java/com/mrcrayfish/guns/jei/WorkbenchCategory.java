@@ -1,8 +1,6 @@
 package com.mrcrayfish.guns.jei;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.client.util.RenderUtil;
@@ -33,7 +31,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.awt.*;
 import java.util.stream.Collectors;
@@ -43,12 +41,11 @@ import java.util.stream.Stream;
  * Author: MrCrayfish
  */
 public class WorkbenchCategory implements IRecipeCategory<WorkbenchRecipe> {
-    public static final ResourceLocation ID = new ResourceLocation(Reference.MOD_ID, "workbench");
-    public static final ResourceLocation BACKGROUND = new ResourceLocation(Reference.MOD_ID, "textures/gui/workbench.png");
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "workbench");
+    public static final ResourceLocation BACKGROUND = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/workbench.png");
     public static final String TITLE_KEY = Reference.MOD_ID + ".category.workbench.title";
     public static final String MATERIALS_KEY = Reference.MOD_ID + ".category.workbench.materials";
 
-    private final IDrawableStatic background;
     private final IDrawableStatic window;
     private final IDrawableStatic inventory;
     private final IDrawableStatic dyeSlot;
@@ -58,13 +55,12 @@ public class WorkbenchCategory implements IRecipeCategory<WorkbenchRecipe> {
 
     public WorkbenchCategory(IGuiHelper helper)
     {
-        this.background = helper.createBlankDrawable(162, 124);
         this.window = helper.createDrawable(BACKGROUND, 7, 15, 162, 72);
         this.inventory = helper.createDrawable(BACKGROUND, 7, 101, 162, 36);
         this.dyeSlot = helper.createDrawable(BACKGROUND, 7, 101, 18, 18);
         this.icon = helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(ModBlocks.WORKBENCH.get()));
         this.title = Component.translatable(TITLE_KEY);
-        this.dyes = ForgeRegistries.ITEMS.getValues().stream().filter(item -> item instanceof DyeItem).toArray(Item[]::new);
+        this.dyes = BuiltInRegistries.ITEM.stream().filter(item -> item instanceof DyeItem).toArray(Item[]::new);
     }
 
     @Override
@@ -78,8 +74,13 @@ public class WorkbenchCategory implements IRecipeCategory<WorkbenchRecipe> {
     }
 
     @Override
-    public IDrawable getBackground() {
-        return this.background;
+    public int getWidth() {
+        return 162;
+    }
+
+    @Override
+    public int getHeight() {
+        return 124;
     }
 
     @Override
@@ -94,7 +95,7 @@ public class WorkbenchCategory implements IRecipeCategory<WorkbenchRecipe> {
             builder.addSlot(RecipeIngredientRole.INPUT, 141, 52).addItemStacks(Stream.of(this.dyes).map(ItemStack::new).collect(Collectors.toList()));
         }
         for (int i = 0; i < recipe.getMaterials().size(); i++) {
-            builder.addSlot(RecipeIngredientRole.INPUT, (i % 8) * 18 + 1, 88 + (i / 8) * 18).addIngredients(recipe.getMaterials().get(i));
+            builder.addSlot(RecipeIngredientRole.INPUT, (i % 8) * 18 + 1, 88 + (i / 8) * 18).addIngredients(recipe.getMaterials().get(i).getIngredient());
         }
         builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addItemStack(output);
     }
@@ -117,26 +118,22 @@ public class WorkbenchCategory implements IRecipeCategory<WorkbenchRecipe> {
         int titleX = this.window.getWidth() / 2;
         graphics.drawCenteredString(Minecraft.getInstance().font, displayName, titleX, 5, Color.WHITE.getRGB());
 
-        PoseStack stack = RenderSystem.getModelViewStack();
-        stack.pushPose();
+        graphics.pose().pushPose();
         {
-            stack.mulPoseMatrix(graphics.pose().last().pose());
-            stack.translate(81, 40, 0);
-            stack.scale(40F, 40F, 40F);
-            stack.mulPose(Axis.XP.rotationDegrees(-5F));
-            float partialTicks = Minecraft.getInstance().getFrameTime();
-            stack.mulPose(Axis.YP.rotationDegrees(Minecraft.getInstance().player.tickCount + partialTicks));
-            stack.scale(-1, -1, -1);
-            RenderSystem.applyModelViewMatrix();
+            graphics.pose().translate(81, 40, 0);
+            graphics.pose().scale(40F, 40F, 40F);
+            graphics.pose().mulPose(Axis.XP.rotationDegrees(-5F));
+            float partialTicks = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
+            graphics.pose().mulPose(Axis.YP.rotationDegrees(Minecraft.getInstance().player.tickCount + partialTicks));
+            graphics.pose().scale(-1, -1, -1);
 
             BakedModel model = RenderUtil.getModel(output);
             Lighting.setupFor3DItems();
 
             MultiBufferSource.BufferSource buffer = Minecraft.getInstance().renderBuffers().bufferSource();
-            Minecraft.getInstance().getItemRenderer().render(output, ItemDisplayContext.FIXED, false, new PoseStack(), buffer, 15728880, OverlayTexture.NO_OVERLAY, model);
+            Minecraft.getInstance().getItemRenderer().render(output, ItemDisplayContext.FIXED, false, graphics.pose(), buffer, 15728880, OverlayTexture.NO_OVERLAY, model);
             buffer.endBatch();
         }
-        stack.popPose();
-        RenderSystem.applyModelViewMatrix();
+        graphics.pose().popPose();
     }
 }

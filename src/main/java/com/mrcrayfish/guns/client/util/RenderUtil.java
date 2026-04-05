@@ -31,7 +31,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HalfTransparentBlock;
 import net.minecraft.world.level.block.StainedGlassPaneBlock;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -149,14 +149,7 @@ public class RenderUtil
                         MatrixUtil.mulComponentWise(entry.pose(), 0.75F);
                     }
 
-                    if(entity)
-                    {
-                        builder = ItemRenderer.getCompassFoilBufferDirect(buffer, renderType, entry);
-                    }
-                    else
-                    {
-                        builder = ItemRenderer.getCompassFoilBuffer(buffer, renderType, entry);
-                    }
+                    builder = ItemRenderer.getFoilBufferDirect(buffer, renderType, true, stack.hasFoil());
 
                     poseStack.popPose();
                 }
@@ -184,7 +177,7 @@ public class RenderUtil
     {
         poseStack.pushPose();
         BakedModel model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(child);
-        model = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(poseStack, model, display, false);
+        model = model.applyTransform(display, poseStack, false);
         poseStack.translate(-0.5D, -0.5D, -0.5D);
         renderItemWithoutTransforms(model, child, parent, poseStack, buffer, light, overlay);
         poseStack.popPose();
@@ -233,7 +226,7 @@ public class RenderUtil
             float red = (float) (color >> 16 & 255) / 255.0F;
             float green = (float) (color >> 8 & 255) / 255.0F;
             float blue = (float) (color & 255) / 255.0F;
-            buffer.putBulkData(entry, quad, red, green, blue, light, overlay); //TODO check if right
+            buffer.putBulkData(entry, quad, red, green, blue, 1.0F, light, overlay, true);
         }
     }
 
@@ -279,7 +272,7 @@ public class RenderUtil
         Minecraft mc = Minecraft.getInstance();
         EntityRenderDispatcher renderManager = mc.getEntityRenderDispatcher();
         PlayerRenderer renderer = (PlayerRenderer) renderManager.getRenderer(player);
-        RenderSystem.setShaderTexture(0, player.getSkinTextureLocation());
+        RenderSystem.setShaderTexture(0, player.getSkin().texture());
         if(hand == HumanoidArm.RIGHT)
         {
             renderer.renderRightHand(poseStack, buffer, combinedLight, player);

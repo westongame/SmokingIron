@@ -6,7 +6,6 @@ import com.mrcrayfish.guns.client.KeyBinds;
 import com.mrcrayfish.guns.client.util.PropertyHelper;
 import com.mrcrayfish.guns.common.GripType;
 import com.mrcrayfish.guns.common.Gun;
-import com.mrcrayfish.guns.compat.PlayerReviveHelper;
 import com.mrcrayfish.guns.debug.Debug;
 import com.mrcrayfish.guns.init.ModBlocks;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
@@ -30,12 +29,13 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -66,12 +66,9 @@ public class AimingHandler
     private AimingHandler() {}
 
     @SubscribeEvent
-    public void onPlayerTick(TickEvent.PlayerTickEvent event)
+    public void onPlayerTick(PlayerTickEvent.Pre event)
     {
-        if(event.phase != TickEvent.Phase.START)
-            return;
-
-        Player player = event.player;
+        Player player = event.getEntity();
         AimTracker tracker = getAimTracker(player);
         if(tracker != null)
         {
@@ -109,11 +106,8 @@ public class AimingHandler
     }
 
     @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event)
+    public void onClientTick(ClientTickEvent.Pre event)
     {
-        if(event.phase != TickEvent.Phase.START)
-            return;
-
         Player player = Minecraft.getInstance().player;
         if(player == null)
             return;
@@ -177,9 +171,9 @@ public class AimingHandler
      * Prevents the crosshair from rendering when aiming down sight
      */
     @SubscribeEvent(receiveCanceled = true)
-    public void onRenderOverlay(RenderGuiOverlayEvent event)
+    public void onRenderOverlay(RenderGuiLayerEvent.Pre event)
     {
-        this.normalisedAdsProgress = this.localTracker.getNormalProgress(event.getPartialTick());
+        this.normalisedAdsProgress = this.localTracker.getNormalProgress(event.getPartialTick().getGameTimeDeltaPartialTick(false));
     }
 
     public boolean isZooming()
@@ -202,9 +196,6 @@ public class AimingHandler
         if(mc.screen != null)
             return false;
 
-        if(PlayerReviveHelper.isBleeding(mc.player))
-            return false;
-
         ItemStack heldItem = mc.player.getMainHandItem();
         if(!(heldItem.getItem() instanceof GunItem))
             return false;
@@ -223,10 +214,6 @@ public class AimingHandler
             return false;
 
         boolean zooming = KeyBinds.getAimMapping().isDown();
-        if(GunMod.controllableLoaded)
-        {
-            zooming |= ControllerHandler.isAiming();
-        }
 
         return zooming;
     }

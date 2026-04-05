@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.mrcrayfish.framework.api.data.login.ILoginData;
 import com.mrcrayfish.guns.GunMod;
 import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.annotation.Validator;
@@ -20,14 +19,13 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.Validate;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -42,12 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Author: MrCrayfish
  */
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID)
+@EventBusSubscriber(modid = Reference.MOD_ID)
 public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunItem, Gun>>
 {
     private static final int FILE_TYPE_LENGTH_VALUE = ".json".length();
@@ -69,9 +66,9 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
     protected Map<GunItem, Gun> prepare(ResourceManager manager, ProfilerFiller profiler)
     {
         Map<GunItem, Gun> map = new HashMap<>();
-        ForgeRegistries.ITEMS.getValues().stream().filter(item -> item instanceof GunItem).forEach(item ->
+        BuiltInRegistries.ITEM.stream().filter(item -> item instanceof GunItem).forEach(item ->
         {
-            ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
             if(id != null)
             {
                 List<ResourceLocation> resources = new ArrayList<>(manager.listResources("guns", (fileName) -> fileName.getPath().endsWith(id.getPath() + ".json")).keySet());
@@ -132,7 +129,7 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
     {
         ImmutableMap.Builder<ResourceLocation, Gun> builder = ImmutableMap.builder();
         objects.forEach((item, gun) -> {
-            builder.put(Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item)), gun);
+            builder.put(Objects.requireNonNull(BuiltInRegistries.ITEM.getKey(item)), gun);
             item.setGun(new Supplier(gun));
         });
         this.registeredGuns = builder.build();
@@ -148,7 +145,7 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
         buffer.writeVarInt(this.registeredGuns.size());
         this.registeredGuns.forEach((id, gun) -> {
             buffer.writeResourceLocation(id);
-            buffer.writeNbt(gun.serializeNBT());
+            buffer.writeNbt(gun.serializeNBT(net.minecraft.core.RegistryAccess.EMPTY));
         });
 }
 
@@ -192,7 +189,7 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
         {
             for(Map.Entry<ResourceLocation, Gun> entry : registeredGuns.entrySet())
             {
-                Item item = ForgeRegistries.ITEMS.getValue(entry.getKey());
+                Item item = BuiltInRegistries.ITEM.get(entry.getKey());
                 if(!(item instanceof GunItem))
                 {
                     return false;
@@ -246,6 +243,10 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
         {
             PacketHandler.getPlayChannel().sendToAll(new S2CMessageUpdateGuns());
         }
+        else
+        {
+            PacketHandler.getPlayChannel().sendToPlayer(() -> event.getPlayer(), new S2CMessageUpdateGuns());
+        }
     }
 
     /**
@@ -280,21 +281,4 @@ public class NetworkGunManager extends SimplePreparableReloadListener<Map<GunIte
         }
     }
 
-    public static class LoginData implements ILoginData
-    {
-        @Override
-        public void writeData(FriendlyByteBuf buffer)
-        {
-            Validate.notNull(NetworkGunManager.get());
-            NetworkGunManager.get().writeRegisteredGuns(buffer);
-        }
-
-        @Override
-        public Optional<String> readData(FriendlyByteBuf buffer)
-        {
-            Map<ResourceLocation, Gun> registeredGuns = NetworkGunManager.readRegisteredGuns(buffer);
-            NetworkGunManager.updateRegisteredGuns(registeredGuns);
-            return Optional.empty();
-        }
-    }
 }

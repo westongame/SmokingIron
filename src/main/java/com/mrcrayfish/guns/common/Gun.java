@@ -7,10 +7,7 @@ import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.annotation.Ignored;
 import com.mrcrayfish.guns.annotation.Optional;
 import com.mrcrayfish.guns.client.ClientHandler;
-import com.mrcrayfish.guns.compat.BackpackHelper;
-import com.mrcrayfish.guns.compat.L2BackpackHelper;
-import com.mrcrayfish.guns.compat.SophisticatedHelper;
-import com.mrcrayfish.guns.compat.TravelersBackpackHelper;
+import com.mrcrayfish.guns.init.ModDataComponents;
 import com.mrcrayfish.guns.debug.Debug;
 import com.mrcrayfish.guns.debug.IDebugWidget;
 import com.mrcrayfish.guns.debug.IEditorMenu;
@@ -32,10 +29,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.minecraft.core.HolderLookup;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nullable;
@@ -85,7 +83,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
     @Override
     public void getEditorWidgets(List<Pair<Component, Supplier<IDebugWidget>>> widgets)
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+        if(FMLEnvironment.dist == Dist.CLIENT) {
             ItemStack heldItem = Objects.requireNonNull(Minecraft.getInstance().player).getMainHandItem();
             ItemStack scope = Gun.getScopeStack(heldItem);
             if(scope.getItem() instanceof ScopeItem scopeItem)
@@ -98,7 +96,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             widgets.add(Pair.of(this.modules.getEditorLabel(), () -> new DebugButton(Component.literal(">"), btn -> {
                 Minecraft.getInstance().setScreen(ClientHandler.createEditorScreen(this.modules));
             })));
-        });
+        }
     }
 
     public static class General implements INBTSerializable<CompoundTag>
@@ -127,7 +125,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         private float spread;
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             tag.putBoolean("Auto", this.auto);
@@ -146,7 +144,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("Auto", Tag.TAG_ANY_NUMERIC))
             {
@@ -346,7 +344,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
     public static class Projectile implements INBTSerializable<CompoundTag>
     {
-        private ResourceLocation item = new ResourceLocation(Reference.MOD_ID, "basic_ammo");
+        private ResourceLocation item = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "basic_ammo");
         @Optional
         private boolean visible;
         private float damage;
@@ -363,7 +361,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         private double trailLengthMultiplier = 1.0;
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             tag.putString("Item", this.item.toString());
@@ -380,11 +378,11 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("Item", Tag.TAG_STRING))
             {
-                this.item = new ResourceLocation(tag.getString("Item"));
+                this.item = ResourceLocation.parse(tag.getString("Item"));
             }
             if(tag.contains("Visible", Tag.TAG_ANY_NUMERIC))
             {
@@ -561,7 +559,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         private ResourceLocation enchantedFire;
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             if(this.fire != null)
@@ -588,7 +586,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("Fire", Tag.TAG_STRING))
             {
@@ -653,7 +651,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         private ResourceLocation createSound(CompoundTag tag, String key)
         {
             String sound = tag.getString(key);
-            return sound.isEmpty() ? null : new ResourceLocation(sound);
+            return sound.isEmpty() ? null : ResourceLocation.parse(sound);
         }
 
         /**
@@ -719,17 +717,17 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             private double size = 0.5;
 
             @Override
-            public CompoundTag serializeNBT()
+            public CompoundTag serializeNBT(HolderLookup.Provider provider)
             {
-                CompoundTag tag = super.serializeNBT();
+                CompoundTag tag = super.serializeNBT(provider);
                 tag.putDouble("Size", this.size);
                 return tag;
             }
 
             @Override
-            public void deserializeNBT(CompoundTag tag)
+            public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
             {
-                super.deserializeNBT(tag);
+                super.deserializeNBT(provider, tag);
                 if(tag.contains("Size", Tag.TAG_ANY_NUMERIC))
                 {
                     this.size = tag.getDouble("Size");
@@ -768,18 +766,18 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         }
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             if(this.flash != null)
             {
-                tag.put("Flash", this.flash.serializeNBT());
+                tag.put("Flash", this.flash.serializeNBT(provider));
             }
             return tag;
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("Flash", Tag.TAG_COMPOUND))
             {
@@ -787,7 +785,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
                 if(!flashTag.isEmpty())
                 {
                     Flash flash = new Flash();
-                    flash.deserializeNBT(tag.getCompound("Flash"));
+                    flash.deserializeNBT(provider, tag.getCompound("Flash"));
                     this.flash = flash;
                 }
                 else
@@ -847,7 +845,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         @Override
         public void getEditorWidgets(List<Pair<Component, Supplier<IDebugWidget>>> widgets)
         {
-            DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            if(FMLEnvironment.dist == Dist.CLIENT) {
                 widgets.add(Pair.of(Component.literal("Enabled Iron Sights"), () -> new DebugToggle(this.zoom != null, val -> {
                     if(val) {
                         if(this.cachedZoom != null) {
@@ -867,7 +865,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
                         Minecraft.getInstance().setScreen(ClientHandler.createEditorScreen(this.zoom));
                     }
                 }, () -> this.zoom != null)));
-            });
+            }
         }
 
         public static class Zoom extends Positioned implements IEditorMenu
@@ -876,17 +874,17 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             private float fovModifier;
 
             @Override
-            public CompoundTag serializeNBT()
+            public CompoundTag serializeNBT(HolderLookup.Provider provider)
             {
-                CompoundTag tag = super.serializeNBT();
+                CompoundTag tag = super.serializeNBT(provider);
                 tag.putFloat("FovModifier", this.fovModifier);
                 return tag;
             }
 
             @Override
-            public void deserializeNBT(CompoundTag tag)
+            public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
             {
-                super.deserializeNBT(tag);
+                super.deserializeNBT(provider, tag);
                 if(tag.contains("FovModifier", Tag.TAG_ANY_NUMERIC))
                 {
                     this.fovModifier = tag.getFloat("FovModifier");
@@ -919,11 +917,11 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             @Override
             public void getEditorWidgets(List<Pair<Component, Supplier<IDebugWidget>>> widgets)
             {
-                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+                if(FMLEnvironment.dist == Dist.CLIENT) {
                     widgets.add(Pair.of(Component.literal("FOV Modifier"), () -> new DebugSlider(0.0, 1.0, this.fovModifier, 0.01, 3, val -> {
                         this.fovModifier = val.floatValue();
                     })));
-                });
+                }
             }
 
             public float getFovModifier()
@@ -1007,46 +1005,46 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             }
 
             @Override
-            public CompoundTag serializeNBT()
+            public CompoundTag serializeNBT(HolderLookup.Provider provider)
             {
                 CompoundTag tag = new CompoundTag();
                 if(this.scope != null)
                 {
-                    tag.put("Scope", this.scope.serializeNBT());
+                    tag.put("Scope", this.scope.serializeNBT(provider));
                 }
                 if(this.barrel != null)
                 {
-                    tag.put("Barrel", this.barrel.serializeNBT());
+                    tag.put("Barrel", this.barrel.serializeNBT(provider));
                 }
                 if(this.stock != null)
                 {
-                    tag.put("Stock", this.stock.serializeNBT());
+                    tag.put("Stock", this.stock.serializeNBT(provider));
                 }
                 if(this.underBarrel != null)
                 {
-                    tag.put("UnderBarrel", this.underBarrel.serializeNBT());
+                    tag.put("UnderBarrel", this.underBarrel.serializeNBT(provider));
                 }
                 return tag;
             }
 
             @Override
-            public void deserializeNBT(CompoundTag tag)
+            public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
             {
                 if(tag.contains("Scope", Tag.TAG_COMPOUND))
                 {
-                    this.scope = this.createScaledPositioned(tag, "Scope");
+                    this.scope = this.createScaledPositioned(provider, tag, "Scope");
                 }
                 if(tag.contains("Barrel", Tag.TAG_COMPOUND))
                 {
-                    this.barrel = this.createScaledPositioned(tag, "Barrel");
+                    this.barrel = this.createScaledPositioned(provider, tag, "Barrel");
                 }
                 if(tag.contains("Stock", Tag.TAG_COMPOUND))
                 {
-                    this.stock = this.createScaledPositioned(tag, "Stock");
+                    this.stock = this.createScaledPositioned(provider, tag, "Stock");
                 }
                 if(tag.contains("UnderBarrel", Tag.TAG_COMPOUND))
                 {
-                    this.underBarrel = this.createScaledPositioned(tag, "UnderBarrel");
+                    this.underBarrel = this.createScaledPositioned(provider, tag, "UnderBarrel");
                 }
             }
 
@@ -1095,37 +1093,37 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
             }
 
             @Nullable
-            private ScaledPositioned createScaledPositioned(CompoundTag tag, String key)
+            private ScaledPositioned createScaledPositioned(HolderLookup.Provider provider, CompoundTag tag, String key)
             {
                 CompoundTag attachment = tag.getCompound(key);
-                return attachment.isEmpty() ? null : new ScaledPositioned(attachment);
+                return attachment.isEmpty() ? null : new ScaledPositioned(provider, attachment);
             }
         }
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             if(this.zoom != null)
             {
-                tag.put("Zoom", this.zoom.serializeNBT());
+                tag.put("Zoom", this.zoom.serializeNBT(provider));
             }
-            tag.put("Attachments", this.attachments.serializeNBT());
+            tag.put("Attachments", this.attachments.serializeNBT(provider));
             return tag;
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("Zoom", Tag.TAG_COMPOUND))
             {
                 Zoom zoom = new Zoom();
-                zoom.deserializeNBT(tag.getCompound("Zoom"));
+                zoom.deserializeNBT(provider, tag.getCompound("Zoom"));
                 this.zoom = zoom;
             }
             if(tag.contains("Attachments", Tag.TAG_COMPOUND))
             {
-                this.attachments.deserializeNBT(tag.getCompound("Attachments"));
+                this.attachments.deserializeNBT(provider, tag.getCompound("Attachments"));
             }
         }
 
@@ -1162,7 +1160,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         protected double zOffset;
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
             CompoundTag tag = new CompoundTag();
             tag.putDouble("XOffset", this.xOffset);
@@ -1172,7 +1170,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
             if(tag.contains("XOffset", Tag.TAG_ANY_NUMERIC))
             {
@@ -1287,23 +1285,23 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
         public ScaledPositioned() {}
 
-        public ScaledPositioned(CompoundTag tag)
+        public ScaledPositioned(HolderLookup.Provider provider, CompoundTag tag)
         {
-            this.deserializeNBT(tag);
+            this.deserializeNBT(provider, tag);
         }
 
         @Override
-        public CompoundTag serializeNBT()
+        public CompoundTag serializeNBT(HolderLookup.Provider provider)
         {
-            CompoundTag tag = super.serializeNBT();
+            CompoundTag tag = super.serializeNBT(provider);
             tag.putDouble("Scale", this.scale);
             return tag;
         }
 
         @Override
-        public void deserializeNBT(CompoundTag tag)
+        public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
         {
-            super.deserializeNBT(tag);
+            super.deserializeNBT(provider, tag);
             if(tag.contains("Scale", Tag.TAG_ANY_NUMERIC))
             {
                 this.scale = tag.getDouble("Scale");
@@ -1339,39 +1337,39 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
     }
 
     @Override
-    public CompoundTag serializeNBT()
+    public CompoundTag serializeNBT(HolderLookup.Provider provider)
     {
         CompoundTag tag = new CompoundTag();
-        tag.put("General", this.general.serializeNBT());
-        tag.put("Projectile", this.projectile.serializeNBT());
-        tag.put("Sounds", this.sounds.serializeNBT());
-        tag.put("Display", this.display.serializeNBT());
-        tag.put("Modules", this.modules.serializeNBT());
+        tag.put("General", this.general.serializeNBT(provider));
+        tag.put("Projectile", this.projectile.serializeNBT(provider));
+        tag.put("Sounds", this.sounds.serializeNBT(provider));
+        tag.put("Display", this.display.serializeNBT(provider));
+        tag.put("Modules", this.modules.serializeNBT(provider));
         return tag;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag tag)
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag)
     {
         if(tag.contains("General", Tag.TAG_COMPOUND))
         {
-            this.general.deserializeNBT(tag.getCompound("General"));
+            this.general.deserializeNBT(provider, tag.getCompound("General"));
         }
         if(tag.contains("Projectile", Tag.TAG_COMPOUND))
         {
-            this.projectile.deserializeNBT(tag.getCompound("Projectile"));
+            this.projectile.deserializeNBT(provider, tag.getCompound("Projectile"));
         }
         if(tag.contains("Sounds", Tag.TAG_COMPOUND))
         {
-            this.sounds.deserializeNBT(tag.getCompound("Sounds"));
+            this.sounds.deserializeNBT(provider, tag.getCompound("Sounds"));
         }
         if(tag.contains("Display", Tag.TAG_COMPOUND))
         {
-            this.display.deserializeNBT(tag.getCompound("Display"));
+            this.display.deserializeNBT(provider, tag.getCompound("Display"));
         }
         if(tag.contains("Modules", Tag.TAG_COMPOUND))
         {
-            this.modules.deserializeNBT(tag.getCompound("Modules"));
+            this.modules.deserializeNBT(provider, tag.getCompound("Modules"));
         }
     }
 
@@ -1389,7 +1387,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
     public static Gun create(CompoundTag tag)
     {
         Gun gun = new Gun();
-        gun.deserializeNBT(tag);
+        gun.deserializeNBT(net.minecraft.core.RegistryAccess.EMPTY, tag);
         return gun;
     }
 
@@ -1450,14 +1448,10 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
     public static ItemStack getScopeStack(ItemStack gun)
     {
-        CompoundTag compound = gun.getTag();
-        if(compound != null && compound.contains("Attachments", Tag.TAG_COMPOUND))
+        GunAttachments attachments = gun.get(ModDataComponents.ATTACHMENTS.get());
+        if(attachments != null)
         {
-            CompoundTag attachment = compound.getCompound("Attachments");
-            if(attachment.contains("Scope", Tag.TAG_COMPOUND))
-            {
-                return ItemStack.of(attachment.getCompound("Scope"));
-            }
+            return attachments.scope();
         }
         return ItemStack.EMPTY;
     }
@@ -1467,35 +1461,24 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
         if(!gun.canAttachType(type))
             return false;
 
-        CompoundTag compound = stack.getTag();
-        if(compound != null && compound.contains("Attachments", Tag.TAG_COMPOUND))
-        {
-            CompoundTag attachment = compound.getCompound("Attachments");
-            return attachment.contains(type.getTagKey(), Tag.TAG_COMPOUND);
-        }
-        return false;
+        GunAttachments attachments = stack.get(ModDataComponents.ATTACHMENTS.get());
+        return attachments != null && attachments.hasAttachment(type);
     }
 
     @Nullable
     public static Scope getScope(ItemStack gun)
     {
-        CompoundTag compound = gun.getTag();
-        if(compound != null && compound.contains("Attachments", Tag.TAG_COMPOUND))
+        GunAttachments attachments = gun.get(ModDataComponents.ATTACHMENTS.get());
+        if(attachments != null && !attachments.scope().isEmpty())
         {
-            CompoundTag attachment = compound.getCompound("Attachments");
-            if(attachment.contains("Scope", Tag.TAG_COMPOUND))
+            ItemStack scopeStack = attachments.scope();
+            if(scopeStack.getItem() instanceof ScopeItem scopeItem)
             {
-                ItemStack scopeStack = ItemStack.of(attachment.getCompound("Scope"));
-                Scope scope = null;
-                if(scopeStack.getItem() instanceof ScopeItem scopeItem)
+                if(GunMod.isDebugging())
                 {
-                    if(GunMod.isDebugging())
-                    {
-                        return Debug.getScope(scopeItem);
-                    }
-                    scope = scopeItem.getProperties();
+                    return Debug.getScope(scopeItem);
                 }
-                return scope;
+                return scopeItem.getProperties();
             }
         }
         return null;
@@ -1503,13 +1486,13 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
     public static ItemStack getAttachment(IAttachment.Type type, ItemStack gun)
     {
-        CompoundTag compound = gun.getTag();
-        if(compound != null && compound.contains("Attachments", Tag.TAG_COMPOUND))
+        GunAttachments attachments = gun.get(ModDataComponents.ATTACHMENTS.get());
+        if(attachments != null)
         {
-            CompoundTag attachment = compound.getCompound("Attachments");
-            if(attachment.contains(type.getTagKey(), Tag.TAG_COMPOUND))
+            ItemStack attachment = attachments.getAttachment(type);
+            if(!attachment.isEmpty())
             {
-                return ItemStack.of(attachment.getCompound(type.getTagKey()));
+                return attachment;
             }
         }
         return ItemStack.EMPTY;
@@ -1517,15 +1500,14 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
     public static float getAdditionalDamage(ItemStack gunStack)
     {
-        CompoundTag tag = gunStack.getOrCreateTag();
-        return tag.getFloat("AdditionalDamage");
+        return gunStack.getOrDefault(ModDataComponents.ADDITIONAL_DAMAGE.get(), 0.0F);
     }
 
     public static AmmoContext findAmmo(Player player, ResourceLocation id)
     {
         if(player.isCreative())
         {
-            Item item = ForgeRegistries.ITEMS.getValue(id);
+            Item item = BuiltInRegistries.ITEM.get(id);
             ItemStack ammo = item != null ? new ItemStack(item, Integer.MAX_VALUE) : ItemStack.EMPTY;
             return new AmmoContext(ammo);
         }
@@ -1537,34 +1519,17 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
                 return new AmmoContext(stack, player.getInventory());
             }
         }
-        AmmoContext ctx = AmmoContext.NONE;
-        if(GunMod.backpackedLoaded)
-        {
-            ctx = BackpackHelper.findAmmo(player, id);
-        }
-        if(GunMod.sopLoaded && ctx.equals(AmmoContext.NONE))
-        {
-            ctx = SophisticatedHelper.findAmmo(player, id);
-        }
-        if(GunMod.travelersBackpackLoaded && ctx.equals(AmmoContext.NONE))
-        {
-            ctx = TravelersBackpackHelper.findAmmo(player, id);
-        }
-        if(GunMod.l2BackpackLoaded && ctx.equals(AmmoContext.NONE)) {
-            ctx = L2BackpackHelper.findAmmo(player, id);
-        }
-        return ctx;
+        return AmmoContext.NONE;
     }
 
     public static boolean isAmmo(ItemStack stack, ResourceLocation id)
     {
-        return stack != null && Objects.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()), id);
+        return stack != null && Objects.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()), id);
     }
 
     public static boolean hasAmmo(ItemStack gunStack)
     {
-        CompoundTag tag = gunStack.getOrCreateTag();
-        return tag.getBoolean("IgnoreAmmo") || tag.getInt("AmmoCount") > 0;
+        return gunStack.has(ModDataComponents.IGNORE_AMMO.get()) || gunStack.getOrDefault(ModDataComponents.AMMO_COUNT.get(), 0) > 0;
     }
 
     public static float getFovModifier(ItemStack stack, Gun modifiedGun)
@@ -1679,7 +1644,7 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
         public Builder setAmmo(Item item)
         {
-            this.gun.projectile.item = ForgeRegistries.ITEMS.getKey(item);
+            this.gun.projectile.item = BuiltInRegistries.ITEM.getKey(item);
             return this;
         }
 
@@ -1739,31 +1704,31 @@ public class Gun implements INBTSerializable<CompoundTag>, IEditorMenu
 
         public Builder setFireSound(SoundEvent sound)
         {
-            this.gun.sounds.fire = ForgeRegistries.SOUND_EVENTS.getKey(sound);
+            this.gun.sounds.fire = BuiltInRegistries.SOUND_EVENT.getKey(sound);
             return this;
         }
 
         public Builder setReloadSound(SoundEvent sound)
         {
-            this.gun.sounds.reload = ForgeRegistries.SOUND_EVENTS.getKey(sound);
+            this.gun.sounds.reload = BuiltInRegistries.SOUND_EVENT.getKey(sound);
             return this;
         }
 
         public Builder setCockSound(SoundEvent sound)
         {
-            this.gun.sounds.cock = ForgeRegistries.SOUND_EVENTS.getKey(sound);
+            this.gun.sounds.cock = BuiltInRegistries.SOUND_EVENT.getKey(sound);
             return this;
         }
 
         public Builder setSilencedFireSound(SoundEvent sound)
         {
-            this.gun.sounds.silencedFire = ForgeRegistries.SOUND_EVENTS.getKey(sound);
+            this.gun.sounds.silencedFire = BuiltInRegistries.SOUND_EVENT.getKey(sound);
             return this;
         }
 
         public Builder setEnchantedFireSound(SoundEvent sound)
         {
-            this.gun.sounds.enchantedFire = ForgeRegistries.SOUND_EVENTS.getKey(sound);
+            this.gun.sounds.enchantedFire = BuiltInRegistries.SOUND_EVENT.getKey(sound);
             return this;
         }
 

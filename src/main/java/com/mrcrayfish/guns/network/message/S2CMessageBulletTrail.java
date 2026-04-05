@@ -1,7 +1,6 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.client.network.ClientPlayHandler;
 import com.mrcrayfish.guns.common.Gun;
 import com.mrcrayfish.guns.entity.ProjectileEntity;
@@ -10,18 +9,18 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class S2CMessageBulletTrail extends PlayMessage<S2CMessageBulletTrail>
+public class S2CMessageBulletTrail
 {
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CMessageBulletTrail> STREAM_CODEC = StreamCodec.of(
+            S2CMessageBulletTrail::encode,
+            S2CMessageBulletTrail::decode
+    );
+
     private int[] entityIds;
     private Vec3[] positions;
     private Vec3[] motions;
@@ -53,7 +52,7 @@ public class S2CMessageBulletTrail extends PlayMessage<S2CMessageBulletTrail>
         this.trailColor = this.enchanted ? 0x9C71FF : projectileProps.getTrailColor();
         this.trailLengthMultiplier = projectileProps.getTrailLengthMultiplier();
         this.life = projectileProps.getLife();
-        this.gravity = spawnedProjectiles[0].getModifiedGravity(); //It's possible that projectiles have different gravity
+        this.gravity = spawnedProjectiles[0].getModifiedGravity();
         this.shooterId = shooterId;
         this.particleData = particleData;
     }
@@ -73,63 +72,57 @@ public class S2CMessageBulletTrail extends PlayMessage<S2CMessageBulletTrail>
         this.particleData = particleData;
     }
 
-    @Override
-    public void encode(S2CMessageBulletTrail message, FriendlyByteBuf buffer)
+    @SuppressWarnings("unchecked")
+    private static void encode(RegistryFriendlyByteBuf buf, S2CMessageBulletTrail msg)
     {
-        buffer.writeInt(message.entityIds.length);
-        for(int i = 0; i < message.entityIds.length; i++)
+        buf.writeInt(msg.entityIds.length);
+        for(int i = 0; i < msg.entityIds.length; i++)
         {
-            buffer.writeInt(message.entityIds[i]);
-            BufferUtil.writeVec3(buffer, message.positions[i]);
-            BufferUtil.writeVec3(buffer, message.motions[i]);
+            buf.writeInt(msg.entityIds[i]);
+            BufferUtil.writeVec3(buf, msg.positions[i]);
+            BufferUtil.writeVec3(buf, msg.motions[i]);
         }
-        buffer.writeItem(message.item);
-        buffer.writeVarInt(message.trailColor);
-        buffer.writeDouble(message.trailLengthMultiplier);
-        buffer.writeInt(message.life);
-        buffer.writeDouble(message.gravity);
-        buffer.writeInt(message.shooterId);
-        buffer.writeBoolean(message.enchanted);
-        buffer.writeId(BuiltInRegistries.PARTICLE_TYPE, message.particleData.getType());
-        message.particleData.writeToNetwork(buffer);
+        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, msg.item);
+        buf.writeVarInt(msg.trailColor);
+        buf.writeDouble(msg.trailLengthMultiplier);
+        buf.writeInt(msg.life);
+        buf.writeDouble(msg.gravity);
+        buf.writeInt(msg.shooterId);
+        buf.writeBoolean(msg.enchanted);
+        buf.writeVarInt(BuiltInRegistries.PARTICLE_TYPE.getId(msg.particleData.getType()));
+        ((StreamCodec<RegistryFriendlyByteBuf, ParticleOptions>) ((ParticleType<ParticleOptions>) msg.particleData.getType()).streamCodec()).encode(buf, msg.particleData);
     }
 
-    @Override
-    public S2CMessageBulletTrail decode(FriendlyByteBuf buffer)
+    @SuppressWarnings("unchecked")
+    private static S2CMessageBulletTrail decode(RegistryFriendlyByteBuf buf)
     {
-        int size = buffer.readInt();
+        int size = buf.readInt();
         int[] entityIds = new int[size];
         Vec3[] positions = new Vec3[size];
         Vec3[] motions = new Vec3[size];
         for(int i = 0; i < size; i++)
         {
-            entityIds[i] = buffer.readInt();
-            positions[i] = BufferUtil.readVec3(buffer);
-            motions[i] = BufferUtil.readVec3(buffer);
+            entityIds[i] = buf.readInt();
+            positions[i] = BufferUtil.readVec3(buf);
+            motions[i] = BufferUtil.readVec3(buf);
         }
-        ItemStack item = buffer.readItem();
-        int trailColor = buffer.readVarInt();
-        double trailLengthMultiplier = buffer.readDouble();
-        int life = buffer.readInt();
-        double gravity = buffer.readDouble();
-        int shooterId = buffer.readInt();
-        boolean enchanted = buffer.readBoolean();
-        ParticleType<?> type = buffer.readById(BuiltInRegistries.PARTICLE_TYPE);
-        if (type == null) type = ParticleTypes.CRIT;
-        ParticleOptions particleData = this.readParticle(buffer, type);
-        return new S2CMessageBulletTrail(entityIds, positions, motions, item, trailColor, trailLengthMultiplier, life, gravity,shooterId, enchanted, particleData);
+        ItemStack item = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        int trailColor = buf.readVarInt();
+        double trailLengthMultiplier = buf.readDouble();
+        int life = buf.readInt();
+        double gravity = buf.readDouble();
+        int shooterId = buf.readInt();
+        boolean enchanted = buf.readBoolean();
+        ParticleType<?> type = BuiltInRegistries.PARTICLE_TYPE.byId(buf.readVarInt());
+        if(type == null) type = ParticleTypes.CRIT;
+        ParticleOptions particleData = ((StreamCodec<RegistryFriendlyByteBuf, ParticleOptions>) ((ParticleType<ParticleOptions>) type).streamCodec()).decode(buf);
+        return new S2CMessageBulletTrail(entityIds, positions, motions, item, trailColor, trailLengthMultiplier, life, gravity, shooterId, enchanted, particleData);
     }
 
-    @Override
-    public void handle(S2CMessageBulletTrail message, MessageContext context)
+    public static void handle(S2CMessageBulletTrail message, MessageContext context)
     {
         context.execute(() -> ClientPlayHandler.handleMessageBulletTrail(message));
         context.setHandled(true);
-    }
-
-    private <T extends ParticleOptions> T readParticle(FriendlyByteBuf buffer, ParticleType<T> type)
-    {
-        return type.getDeserializer().fromNetwork(type, buffer);
     }
 
     public int getCount()

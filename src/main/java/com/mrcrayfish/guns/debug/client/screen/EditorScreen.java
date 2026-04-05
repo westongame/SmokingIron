@@ -20,7 +20,6 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,7 +33,7 @@ import java.util.function.Supplier;
  */
 public class EditorScreen extends Screen
 {
-    private static final ResourceLocation WINDOW_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/gui/debug.png");
+    private static final ResourceLocation WINDOW_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/gui/debug.png");
     private static final int WIDTH = 150;
 
     private final Screen parent;
@@ -66,9 +65,7 @@ public class EditorScreen extends Screen
         }).pos(this.windowLeft + WIDTH - 12 - 4, this.windowTop + 4).size(12, 12).build());
 
         this.list = new PropertyList();
-        this.list.setRenderBackground(false);
-        this.list.setRenderTopAndBottom(false);
-        this.list.setLeftPos(this.windowLeft + 10);
+        this.list.setX(this.windowLeft + 10);
         this.addWidget(this.list);
 
         widgets.forEach(pair -> {
@@ -97,7 +94,6 @@ public class EditorScreen extends Screen
     private void drawHeader(int x, int y, int width)
     {
         int height = 20;
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, WINDOW_TEXTURE);
         this.drawTexturedRect(x, y, 0, 0, 2, 2, 2, 2);                           /* Top left corner */
         this.drawTexturedRect(x + width - 2, y, 3, 0, 2, 2, 2, 2);               /* Top right corner */
@@ -112,7 +108,6 @@ public class EditorScreen extends Screen
 
     private void drawBody(int x, int y, int width, int height)
     {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderTexture(0, WINDOW_TEXTURE);
         this.drawTexturedRect(x, y + height - 2, 5, 3, 2, 2, 2, 2);             /* Bottom left corner */
         this.drawTexturedRect(x + width - 2, y + height - 2, 8, 3, 2, 2, 2, 2); /* Bottom right corner */
@@ -126,14 +121,12 @@ public class EditorScreen extends Screen
     {
         float uScale = 1.0F / 256.0F;
         float vScale = 1.0F / 256.0F;
-        Tesselator tesselator = Tesselator.getInstance();
-        BufferBuilder buffer = tesselator.getBuilder();
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        buffer.vertex(x, y + height, 0).uv(u * uScale, (v + textureHeight) * vScale).endVertex();
-        buffer.vertex(x + width, y + height, 0).uv((u + textureWidth) * uScale, (v + textureHeight) * vScale).endVertex();
-        buffer.vertex(x + width, y, 0).uv((u + textureWidth) * uScale, v * vScale).endVertex();
-        buffer.vertex(x, y, 0).uv(u * uScale, v * vScale).endVertex();
-        BufferUploader.drawWithShader(buffer.end());
+        BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        buffer.addVertex(x, y + height, 0).setUv(u * uScale, (v + textureHeight) * vScale);
+        buffer.addVertex(x + width, y + height, 0).setUv((u + textureWidth) * uScale, (v + textureHeight) * vScale);
+        buffer.addVertex(x + width, y, 0).setUv((u + textureWidth) * uScale, v * vScale);
+        buffer.addVertex(x, y, 0).setUv(u * uScale, v * vScale);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
     private class PropertyList extends ContainerObjectSelectionList<PropertyEntry>
@@ -142,7 +135,7 @@ public class EditorScreen extends Screen
 
         public PropertyList()
         {
-            super(EditorScreen.this.minecraft, EditorScreen.this.windowWidth - 20, EditorScreen.this.windowHeight, EditorScreen.this.windowTop + 20, EditorScreen.this.windowTop + EditorScreen.this.windowHeight - 5, 34);
+            super(EditorScreen.this.minecraft, EditorScreen.this.windowWidth - 20, EditorScreen.this.windowHeight - 25, EditorScreen.this.windowTop + 20, 34);
         }
 
         @Override
@@ -152,12 +145,12 @@ public class EditorScreen extends Screen
         }
 
         @Override
-        public void updateNarration(NarrationElementOutput output) {}
+        public void updateWidgetNarration(NarrationElementOutput output) {}
 
         @Override
         protected int getScrollbarPosition()
         {
-            return this.getLeft() + this.width - 6;
+            return this.getRowLeft() + this.getRowWidth() + 6;
         }
 
         @Override
@@ -173,11 +166,11 @@ public class EditorScreen extends Screen
         }
 
         @Override
-        public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
+        public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick)
         {
-            ScreenUtil.startScissor(this.x0, this.y0, this.x1 - this.x0, this.y1 - this.y0);
-            super.render(graphics, mouseX, mouseY, partialTick);
-            ScreenUtil.endScissor();
+            graphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight());
+            super.renderWidget(graphics, mouseX, mouseY, partialTick);
+            graphics.disableScissor();
         }
     }
 
@@ -217,7 +210,7 @@ public class EditorScreen extends Screen
         @Override
         public boolean isMouseOver(double mouseX, double mouseY)
         {
-            return ScreenUtil.isMouseWithin(EditorScreen.this.list.getRowLeft(), EditorScreen.this.list.getTop(), EditorScreen.this.list.getRowWidth(), EditorScreen.this.list.getHeight(), (int) mouseX, (int) mouseY) && super.isMouseOver(mouseX, mouseY);
+            return ScreenUtil.isMouseWithin(EditorScreen.this.list.getRowLeft(), EditorScreen.this.list.getY(), EditorScreen.this.list.getRowWidth(), EditorScreen.this.list.getHeight(), (int) mouseX, (int) mouseY) && super.isMouseOver(mouseX, mouseY);
         }
     }
 }

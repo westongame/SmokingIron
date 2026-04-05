@@ -1,6 +1,8 @@
 package com.mrcrayfish.guns.common.container;
 
 import com.mrcrayfish.guns.common.Gun;
+import com.mrcrayfish.guns.common.GunAttachments;
+import com.mrcrayfish.guns.init.ModDataComponents;
 import com.mrcrayfish.guns.common.container.slot.AttachmentSlot;
 import com.mrcrayfish.guns.init.ModContainers;
 import com.mrcrayfish.guns.item.attachment.IAttachment;
@@ -99,19 +101,16 @@ public class AttachmentContainer extends AbstractContainerMenu
     @Override
     public void slotsChanged(Container inventoryIn)
     {
-        CompoundTag attachments = new CompoundTag();
-
+        GunAttachments.Builder attachBuilder = new GunAttachments.Builder();
         for(int i = 0; i < this.getWeaponInventory().getContainerSize(); i++)
         {
             ItemStack attachment = this.getSlot(i).getItem();
             if(attachment.getItem() instanceof IAttachment)
             {
-                attachments.put(((IAttachment) attachment.getItem()).getType().getTagKey(), attachment.save(new CompoundTag()));
+                attachBuilder.set(((IAttachment) attachment.getItem()).getType(), attachment);
             }
         }
-
-        CompoundTag tag = this.weapon.getOrCreateTag();
-        tag.put("Attachments", attachments);
+        this.weapon.set(ModDataComponents.ATTACHMENTS.get(), attachBuilder.build());
         super.broadcastChanges();
     }
 

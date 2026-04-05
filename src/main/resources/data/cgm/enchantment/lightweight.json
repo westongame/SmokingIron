@@ -1,0 +1,13 @@
+{
+  "description": {"translate": "enchantment.cgm.lightweight"},
+  "supported_items": "#cgm:enchantable/gun",
+  "primary_items": "#cgm:enchantable/gun",
+  "max_level": 1,
+  "weight": 2,
+  "min_cost": {"base": 15, "per_level_above_first": 0},
+  "max_cost": {"base": 35, "per_level_above_first": 0},
+  "anvil_cost": 4,
+  "slots": ["mainhand"],
+  "effects": {},
+  "exclusive_set": "#cgm:exclusive_set/weapon"
+}

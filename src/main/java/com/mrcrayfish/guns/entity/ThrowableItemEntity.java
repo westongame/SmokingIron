@@ -4,9 +4,7 @@ import com.mrcrayfish.guns.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
@@ -21,13 +19,12 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.entity.IEntityAdditionalSpawnData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
 
 /**
  * Author: MrCrayfish
  */
-public abstract class ThrowableItemEntity extends ThrowableProjectile implements IEntityAdditionalSpawnData
+public abstract class ThrowableItemEntity extends ThrowableProjectile implements IEntityWithComplexSpawn
 {
     private ItemStack item = ItemStack.EMPTY;
     private boolean shouldBounce;
@@ -72,7 +69,7 @@ public abstract class ThrowableItemEntity extends ThrowableProjectile implements
     }
 
     @Override
-    protected float getGravity()
+    protected double getDefaultGravity()
     {
         return this.gravityVelocity;
     }
@@ -170,7 +167,7 @@ public abstract class ThrowableItemEntity extends ThrowableProjectile implements
                 break;
             case Y:
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.75, -0.25, 0.75));
-                if(this.getDeltaMovement().y() < this.getGravity())
+                if(this.getDeltaMovement().y() < this.getDefaultGravity())
                 {
                     this.setDeltaMovement(this.getDeltaMovement().multiply(1, 0, 1));
                 }
@@ -188,24 +185,19 @@ public abstract class ThrowableItemEntity extends ThrowableProjectile implements
     }
 
     @Override
-    public void writeSpawnData(FriendlyByteBuf buffer)
+    public void writeSpawnData(RegistryFriendlyByteBuf buffer)
     {
         buffer.writeBoolean(this.shouldBounce);
         buffer.writeFloat(this.gravityVelocity);
-        buffer.writeItem(this.item);
+        net.minecraft.world.item.ItemStack.OPTIONAL_STREAM_CODEC.encode(buffer, this.item);
     }
 
     @Override
-    public void readSpawnData(FriendlyByteBuf buffer)
+    public void readSpawnData(RegistryFriendlyByteBuf buffer)
     {
         this.shouldBounce = buffer.readBoolean();
         this.gravityVelocity = buffer.readFloat();
-        this.item = buffer.readItem();
+        this.item = net.minecraft.world.item.ItemStack.OPTIONAL_STREAM_CODEC.decode(buffer);
     }
 
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket()
-    {
-        return NetworkHooks.getEntitySpawningPacket(this);
-    }
 }

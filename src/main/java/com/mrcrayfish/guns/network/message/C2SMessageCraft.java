@@ -1,22 +1,23 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.common.network.ServerPlayHandler;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageCraft extends PlayMessage<C2SMessageCraft>
+public class C2SMessageCraft
 {
-    private ResourceLocation id;
-    private BlockPos pos;
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageCraft> STREAM_CODEC = StreamCodec.composite(
+            ResourceLocation.STREAM_CODEC, msg -> msg.id,
+            BlockPos.STREAM_CODEC, msg -> msg.pos,
+            C2SMessageCraft::new
+    );
 
-    public C2SMessageCraft() {}
+    private final ResourceLocation id;
+    private final BlockPos pos;
 
     public C2SMessageCraft(ResourceLocation id, BlockPos pos)
     {
@@ -24,30 +25,15 @@ public class C2SMessageCraft extends PlayMessage<C2SMessageCraft>
         this.pos = pos;
     }
 
-    @Override
-    public void encode(C2SMessageCraft message, FriendlyByteBuf buffer)
+    public static void handle(C2SMessageCraft message, MessageContext context)
     {
-        buffer.writeResourceLocation(message.id);
-        buffer.writeBlockPos(message.pos);
-    }
-
-    @Override
-    public C2SMessageCraft decode(FriendlyByteBuf buffer)
-    {
-        return new C2SMessageCraft(buffer.readResourceLocation(), buffer.readBlockPos());
-    }
-
-    @Override
-    public void handle(C2SMessageCraft message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null)
+            if(p instanceof ServerPlayer player)
             {
                 ServerPlayHandler.handleCraft(player, message.id, message.pos);
             }
-        });
+        }));
         context.setHandled(true);
     }
 }

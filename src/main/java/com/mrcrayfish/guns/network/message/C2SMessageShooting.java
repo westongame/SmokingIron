@@ -1,51 +1,35 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageShooting extends PlayMessage<C2SMessageShooting>
+public class C2SMessageShooting
 {
-    private boolean shooting;
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageShooting> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, msg -> msg.shooting,
+            C2SMessageShooting::new
+    );
 
-    public C2SMessageShooting() {}
+    private final boolean shooting;
 
     public C2SMessageShooting(boolean shooting)
     {
         this.shooting = shooting;
     }
 
-    @Override
-    public void encode(C2SMessageShooting message, FriendlyByteBuf buffer)
+    public static void handle(C2SMessageShooting message, MessageContext context)
     {
-        buffer.writeBoolean(message.shooting);
-    }
-
-    @Override
-    public C2SMessageShooting decode(FriendlyByteBuf buffer)
-    {
-        return new C2SMessageShooting(buffer.readBoolean());
-    }
-
-    @Override
-    public void handle(C2SMessageShooting message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null)
+            if(p instanceof ServerPlayer player)
             {
                 ModSyncedDataKeys.SHOOTING.setValue(player, message.shooting);
             }
-        });
+        }));
         context.setHandled(true);
     }
 }

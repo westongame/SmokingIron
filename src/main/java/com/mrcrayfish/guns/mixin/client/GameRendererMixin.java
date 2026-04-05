@@ -3,6 +3,7 @@ package com.mrcrayfish.guns.mixin.client;
 import com.mojang.blaze3d.platform.Window;
 import com.mrcrayfish.guns.Config;
 import com.mrcrayfish.guns.init.ModEffects;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
@@ -16,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiling/ProfilerFiller;popPush(Ljava/lang/String;)V", ordinal = 0, shift = At.Shift.AFTER))
-    public void updateCameraAndRender(float partialTicks, long nanoTime, boolean renderWorldIn, CallbackInfo ci) {
+    public void updateCameraAndRender(DeltaTracker deltaTracker, boolean renderWorldIn, CallbackInfo ci) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null)
@@ -24,7 +25,7 @@ public class GameRendererMixin {
             return;
         }
 
-        MobEffectInstance effect = player.getEffect(ModEffects.BLINDED.get());
+        MobEffectInstance effect = player.getEffect(ModEffects.BLINDED);
         if (effect != null)
         {
             // Render white screen-filling overlay at full alpha effect when duration is above threshold

@@ -15,3 +15,7 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Disable autocrlf on generated files, they always generate with LF
+src/generated/**/.cache/* text eol=lf
+src/generated/**/*.json text eol=lf

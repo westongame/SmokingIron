@@ -14,9 +14,9 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import javax.annotation.Nullable;
 import java.io.InvalidObjectException;
@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Author: MrCrayfish
  */
-@Mod.EventBusSubscriber(modid = Reference.MOD_ID)
+@EventBusSubscriber(modid = Reference.MOD_ID)
 public class CustomGunLoader extends SimpleJsonResourceReloadListener
 {
     private static final Gson GSON_INSTANCE = Util.make(() -> {
@@ -87,7 +87,7 @@ public class CustomGunLoader extends SimpleJsonResourceReloadListener
         buffer.writeVarInt(this.customGunMap.size());
         this.customGunMap.forEach((id, gun) -> {
             buffer.writeResourceLocation(id);
-            buffer.writeNbt(gun.serializeNBT());
+            buffer.writeNbt(gun.serializeNBT(net.minecraft.core.RegistryAccess.EMPTY));
         });
     }
 
@@ -107,7 +107,7 @@ public class CustomGunLoader extends SimpleJsonResourceReloadListener
             {
                 ResourceLocation id = buffer.readResourceLocation();
                 CustomGun customGun = new CustomGun();
-                customGun.deserializeNBT(buffer.readNbt());
+                customGun.deserializeNBT(net.minecraft.core.RegistryAccess.EMPTY, buffer.readNbt());
                 builder.put(id, customGun);
             }
             return builder.build();

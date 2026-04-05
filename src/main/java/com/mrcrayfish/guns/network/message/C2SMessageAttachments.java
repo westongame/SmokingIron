@@ -1,38 +1,27 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.common.network.ServerPlayHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageAttachments extends PlayMessage<C2SMessageAttachments>
+public class C2SMessageAttachments
 {
-    public C2SMessageAttachments() {}
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageAttachments> STREAM_CODEC = StreamCodec.of(
+            (buf, msg) -> {},
+            buf -> new C2SMessageAttachments()
+    );
 
-    @Override
-    public void encode(C2SMessageAttachments message, FriendlyByteBuf buffer) {}
-
-    @Override
-    public C2SMessageAttachments decode(FriendlyByteBuf buffer)
+    public static void handle(C2SMessageAttachments message, MessageContext context)
     {
-        return new C2SMessageAttachments();
-    }
-
-    @Override
-    public void handle(C2SMessageAttachments message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null)
+            if(p instanceof ServerPlayer player)
             {
                 ServerPlayHandler.handleAttachments(player);
             }
-        });
+        }));
         context.setHandled(true);
     }
 }

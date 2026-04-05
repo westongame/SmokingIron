@@ -1,64 +1,48 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.event.GunReloadEvent;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
-import java.util.function.Supplier;
-
-/**
- * Author: MrCrayfish
- */
-public class C2SMessageReload extends PlayMessage<C2SMessageReload>
+public class C2SMessageReload
 {
-    private boolean reload;
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageReload> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, msg -> msg.reload,
+            C2SMessageReload::new
+    );
 
-    public C2SMessageReload() {}
+    private final boolean reload;
 
     public C2SMessageReload(boolean reload)
     {
         this.reload = reload;
     }
 
-    @Override
-    public void encode(C2SMessageReload message, FriendlyByteBuf buffer)
+    public static void handle(C2SMessageReload message, MessageContext context)
     {
-        buffer.writeBoolean(message.reload);
-    }
-
-    @Override
-    public C2SMessageReload decode(FriendlyByteBuf buffer)
-    {
-        return new C2SMessageReload(buffer.readBoolean());
-    }
-
-    @Override
-    public void handle(C2SMessageReload message, MessageContext context)
-    {
-        context.execute(() ->
+        context.execute(() -> context.getPlayer().ifPresent(p ->
         {
-            ServerPlayer player = context.getPlayer();
-            if(player != null && !player.isSpectator())
+            if(p instanceof ServerPlayer player && !player.isSpectator())
             {
-                ModSyncedDataKeys.RELOADING.setValue(player, message.reload); // This has to be set in order to verify the packet is sent if the event is cancelled
+                ModSyncedDataKeys.RELOADING.setValue(player, message.reload);
                 if(!message.reload)
                     return;
 
                 ItemStack gun = player.getMainHandItem();
-                if(MinecraftForge.EVENT_BUS.post(new GunReloadEvent.Pre(player, gun)))
+                if(NeoForge.EVENT_BUS.post(new GunReloadEvent.Pre(player, gun)).isCanceled())
                 {
                     ModSyncedDataKeys.RELOADING.setValue(player, false);
                     return;
                 }
-                MinecraftForge.EVENT_BUS.post(new GunReloadEvent.Post(player, gun));
+                NeoForge.EVENT_BUS.post(new GunReloadEvent.Post(player, gun));
             }
-        });
+        }));
         context.setHandled(true);
     }
 }

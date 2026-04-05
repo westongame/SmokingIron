@@ -1,7 +1,5 @@
 package com.mrcrayfish.guns.client.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.guns.Config;
 import com.mrcrayfish.guns.Reference;
@@ -30,8 +28,8 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.ConfigScreenHandler;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.fml.ModList;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
@@ -44,7 +42,7 @@ import java.util.List;
  * Author: MrCrayfish
  */
 public class AttachmentScreen extends AbstractContainerScreen<AttachmentContainer> {
-    private static final ResourceLocation GUI_TEXTURES = new ResourceLocation("cgm:textures/gui/attachments.png");
+    private static final ResourceLocation GUI_TEXTURES = ResourceLocation.parse("cgm:textures/gui/attachments.png");
     private static final Component CONFIG_TOOLTIP = Component.translatable("cgm.button.config.tooltip");
 
     private final Inventory playerInventory;
@@ -108,7 +106,6 @@ public class AttachmentScreen extends AbstractContainerScreen<AttachmentContaine
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTicks);
         this.renderTooltip(graphics, mouseX, mouseY); //Render tool tips
 
@@ -148,18 +145,12 @@ public class AttachmentScreen extends AbstractContainerScreen<AttachmentContaine
         graphics.pose().mulPose(Axis.YP.rotationDegrees(150F));
         graphics.pose().scale(this.windowZoom / 10F, this.windowZoom / 10F, this.windowZoom / 10F);
         graphics.pose().mulPose(Axis.YP.rotationDegrees(90F));
-        graphics.pose().mulPoseMatrix((new Matrix4f()).scaling(1.0F, -1.0F, 1.0F));
+        graphics.pose().scale(1.0F, -1.0F, 1.0F);
         graphics.pose().scale(90.0F, 90.0F, 90.0F);
-        PoseStack modelStack = RenderSystem.getModelViewStack();
-        modelStack.pushPose();
-        modelStack.mulPoseMatrix(graphics.pose().last().pose());
-        RenderSystem.applyModelViewMatrix();
         MultiBufferSource.BufferSource buffer = this.minecraft.renderBuffers().bufferSource();
-        GunRenderingHandler.get().renderWeapon(this.minecraft.player, this.minecraft.player.getMainHandItem(), ItemDisplayContext.GROUND, new PoseStack(), buffer, 15728880, 0F);
+        GunRenderingHandler.get().renderWeapon(this.minecraft.player, this.minecraft.player.getMainHandItem(), ItemDisplayContext.GROUND, graphics.pose(), buffer, 15728880, 0F);
         buffer.endBatch();
         graphics.pose().popPose();
-        modelStack.popPose();
-        RenderSystem.applyModelViewMatrix();
         graphics.disableScissor();
 
         if (this.showHelp) {
@@ -217,7 +208,7 @@ public class AttachmentScreen extends AbstractContainerScreen<AttachmentContaine
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scroll) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollDeltaX, double scroll) {
         int startX = (this.width - this.imageWidth) / 2;
         int startY = (this.height - this.imageHeight) / 2;
         if (RenderUtil.isMouseWithin((int) mouseX, (int) mouseY, startX + 26, startY + 17, 142, 70)) {
@@ -268,7 +259,7 @@ public class AttachmentScreen extends AbstractContainerScreen<AttachmentContaine
 
     private void openConfigScreen() {
         ModList.get().getModContainerById(Reference.MOD_ID).ifPresent(container -> {
-            Screen screen = container.getCustomExtension(ConfigScreenHandler.ConfigScreenFactory.class).map(function -> function.screenFunction().apply(this.minecraft, null)).orElse(null);
+            Screen screen = container.getCustomExtension(IConfigScreenFactory.class).map(factory -> factory.createScreen(container, null)).orElse(null);
             if (screen != null) {
                 this.minecraft.setScreen(screen);
             } else if (this.minecraft != null && this.minecraft.player != null) {

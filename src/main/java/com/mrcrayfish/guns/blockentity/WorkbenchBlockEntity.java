@@ -36,16 +36,17 @@ public class WorkbenchBlockEntity extends SyncedBlockEntity implements IStorageB
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag)
+    protected void saveAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider provider)
     {
-        ContainerHelper.saveAllItems(tag, this.inventory);
+        super.saveAdditional(tag, provider);
+        ContainerHelper.saveAllItems(tag, this.inventory, provider);
     }
 
     @Override
-    public void load(CompoundTag tag)
+    protected void loadAdditional(CompoundTag tag, net.minecraft.core.HolderLookup.Provider provider)
     {
-        super.load(tag);
-        ContainerHelper.loadAllItems(tag, this.inventory);
+        super.loadAdditional(tag, provider);
+        ContainerHelper.loadAllItems(tag, this.inventory, provider);
     }
 
     @Override

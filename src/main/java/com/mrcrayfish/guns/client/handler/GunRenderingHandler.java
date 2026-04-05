@@ -17,7 +17,6 @@ import com.mrcrayfish.guns.client.util.RenderUtil;
 import com.mrcrayfish.guns.common.GripType;
 import com.mrcrayfish.guns.common.Gun;
 import com.mrcrayfish.guns.common.properties.SightAnimation;
-import com.mrcrayfish.guns.compat.CMDCamHelper;
 import com.mrcrayfish.guns.event.GunFireEvent;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
 import com.mrcrayfish.guns.item.GrenadeItem;
@@ -38,6 +37,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import com.mrcrayfish.guns.common.GunAttachments;
+import com.mrcrayfish.guns.init.ModDataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -53,12 +54,13 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.RenderHandEvent;
-import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.client.event.RenderHandEvent;
+import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderFrameEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.util.ObfuscationReflectionHelper;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -67,8 +69,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 public class GunRenderingHandler {
-    public static final ResourceLocation MUZZLE_FLASH_TEXTURE = new ResourceLocation(Reference.MOD_ID, "textures/effect/muzzle_flash.png");
-    public static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation( "textures/gui/icons.png"); // Kinda hacky
+    public static final ResourceLocation MUZZLE_FLASH_TEXTURE = ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "textures/effect/muzzle_flash.png");
+    public static final ResourceLocation GUI_ICONS_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/icons.png"); // Kinda hacky
     private static GunRenderingHandler instance;
     private final Random random = new Random();
     private final Set<Integer> entityIdForMuzzleFlash = new HashSet<>();
@@ -105,10 +107,7 @@ public class GunRenderingHandler {
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END)
-            return;
-
+    public void onTick(ClientTickEvent.Post event) {
         this.updateSprinting();
         this.updateMuzzleFlash();
         this.updateOffhandTranslate();
@@ -214,7 +213,7 @@ public class GunRenderingHandler {
         event.setFOV(Mth.lerp(time, event.getFOV(), newFov));
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGH)
     public void onRenderOverlay(RenderHandEvent event) {
         PoseStack poseStack = event.getPoseStack();
 
@@ -251,10 +250,9 @@ public class GunRenderingHandler {
         event.setCanceled(true);
 
         ItemStack overrideModel = ItemStack.EMPTY;
-        if (heldItem.getTag() != null) {
-            if (heldItem.getTag().contains("Model", Tag.TAG_COMPOUND)) {
-                overrideModel = ItemStack.of(heldItem.getTag().getCompound("Model"));
-            }
+        CompoundTag gunData = heldItem.get(ModDataComponents.GUN_DATA.get());
+        if (gunData != null && gunData.contains("Model", Tag.TAG_COMPOUND)) {
+            overrideModel = ItemStack.parseOptional(Minecraft.getInstance().level.registryAccess(), gunData.getCompound("Model"));
         }
 
         LocalPlayer player = Objects.requireNonNull(Minecraft.getInstance().player);
@@ -480,9 +478,7 @@ public class GunRenderingHandler {
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent.RenderTickEvent event) {
-        if (event.phase.equals(TickEvent.Phase.START))
-            return;
+    public void onTick(RenderFrameEvent.Post event) {
 
         Minecraft mc = Minecraft.getInstance();
         if (!mc.isWindowActive())
@@ -505,7 +501,7 @@ public class GunRenderingHandler {
 
             int duration = player.getTicksUsingItem();
             if (duration >= 10) {
-                float cookTime = 1.0F - ((float) (duration - 10) / (float) (player.getUseItem().getUseDuration() - 10));
+                float cookTime = 1.0F - ((float) (duration - 10) / (float) (player.getUseItem().getUseDuration(player) - 10));
                 if (cookTime > 0.0F) {
                     float scale = 3;
                     Window window = mc.getWindow();
@@ -515,7 +511,6 @@ public class GunRenderingHandler {
                     RenderSystem.enableBlend();
                     RenderSystem.defaultBlendFunc();
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                    RenderSystem.setShader(GameRenderer::getPositionTexShader);
                     RenderSystem.setShaderTexture(0, GUI_ICONS_LOCATION);
 
                     GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
@@ -533,7 +528,7 @@ public class GunRenderingHandler {
         if (Config.CLIENT.display.cooldownIndicator.get() && heldItem.getItem() instanceof GunItem) {
             Gun gun = ((GunItem) heldItem.getItem()).getGun();
             if (!gun.getGeneral().isAuto()) {
-                float coolDown = player.getCooldowns().getCooldownPercent(heldItem.getItem(), event.renderTickTime);
+                float coolDown = player.getCooldowns().getCooldownPercent(heldItem.getItem(), event.getPartialTick().getGameTimeDeltaPartialTick(false));
                 if (coolDown > 0.0F) {
                     float scale = 3;
                     Window window = mc.getWindow();
@@ -543,7 +538,6 @@ public class GunRenderingHandler {
                     RenderSystem.enableBlend();
                     RenderSystem.defaultBlendFunc();
                     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                    RenderSystem.setShader(GameRenderer::getPositionTexShader);
                     RenderSystem.setShaderTexture(0, GUI_ICONS_LOCATION);
 
                     GuiGraphics graphics = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
@@ -558,25 +552,14 @@ public class GunRenderingHandler {
         }
     }
 
-    public void applyWeaponScale(ItemStack heldItem, PoseStack stack) {
-        if (heldItem.getTag() != null) {
-            CompoundTag compound = heldItem.getTag();
-            if (compound.contains("Scale", Tag.TAG_FLOAT)) {
-                float scale = compound.getFloat("Scale");
-                stack.scale(scale, scale, scale);
-            }
-        }
-    }
-
     public boolean renderWeapon(@Nullable LivingEntity entity, ItemStack stack, ItemDisplayContext display, PoseStack poseStack, MultiBufferSource renderTypeBuffer, int light, float partialTicks) {
         if (stack.getItem() instanceof GunItem) {
             poseStack.pushPose();
 
             ItemStack model = ItemStack.EMPTY;
-            if (stack.getTag() != null) {
-                if (stack.getTag().contains("Model", Tag.TAG_COMPOUND)) {
-                    model = ItemStack.of(stack.getTag().getCompound("Model"));
-                }
+            CompoundTag gunData = stack.get(ModDataComponents.GUN_DATA.get());
+            if (gunData != null && gunData.contains("Model", Tag.TAG_COMPOUND)) {
+                model = ItemStack.parseOptional(Minecraft.getInstance().level.registryAccess(), gunData.getCompound("Model"));
             }
 
             RenderUtil.applyTransformType(stack, poseStack, display, entity);
@@ -609,12 +592,10 @@ public class GunRenderingHandler {
     private void renderAttachments(@Nullable LivingEntity entity, ItemDisplayContext display, ItemStack stack, PoseStack poseStack, MultiBufferSource renderTypeBuffer, int light, float partialTicks) {
         if (stack.getItem() instanceof GunItem) {
             Gun modifiedGun = ((GunItem) stack.getItem()).getModifiedGun(stack);
-            CompoundTag gunTag = stack.getOrCreateTag();
-            CompoundTag attachments = gunTag.getCompound("Attachments");
-            for (String tagKey : attachments.getAllKeys()) {
-                IAttachment.Type type = IAttachment.Type.byTagKey(tagKey);
-                if (type != null && modifiedGun.canAttachType(type)) {
-                    ItemStack attachmentStack = Gun.getAttachment(type, stack);
+            GunAttachments gunAttachments = stack.getOrDefault(ModDataComponents.ATTACHMENTS.get(), GunAttachments.EMPTY);
+            for (IAttachment.Type type : IAttachment.Type.values()) {
+                if (gunAttachments.hasAttachment(type) && modifiedGun.canAttachType(type)) {
+                    ItemStack attachmentStack = gunAttachments.getAttachment(type);
                     if (!attachmentStack.isEmpty()) {
                         poseStack.pushPose();
 
@@ -707,10 +688,10 @@ public class GunRenderingHandler {
         float maxU = weapon.isEnchanted() ? 1.0F : 0.5F;
         Matrix4f matrix = poseStack.last().pose();
         VertexConsumer builder = buffer.getBuffer(GunRenderType.getMuzzleFlash());
-        builder.vertex(matrix, 0, 0, 0).color(1.0F, 1.0F, 1.0F, 1.0F).uv(maxU, 1.0F).uv2(15728880).endVertex();
-        builder.vertex(matrix, 1, 0, 0).color(1.0F, 1.0F, 1.0F, 1.0F).uv(minU, 1.0F).uv2(15728880).endVertex();
-        builder.vertex(matrix, 1, 1, 0).color(1.0F, 1.0F, 1.0F, 1.0F).uv(minU, 0).uv2(15728880).endVertex();
-        builder.vertex(matrix, 0, 1, 0).color(1.0F, 1.0F, 1.0F, 1.0F).uv(maxU, 0).uv2(15728880).endVertex();
+        builder.addVertex(matrix, 0, 0, 0).setColor(1.0F, 1.0F, 1.0F, 1.0F).setUv(maxU, 1.0F).setLight(15728880);
+        builder.addVertex(matrix, 1, 0, 0).setColor(1.0F, 1.0F, 1.0F, 1.0F).setUv(minU, 1.0F).setLight(15728880);
+        builder.addVertex(matrix, 1, 1, 0).setColor(1.0F, 1.0F, 1.0F, 1.0F).setUv(minU, 0).setLight(15728880);
+        builder.addVertex(matrix, 0, 1, 0).setColor(1.0F, 1.0F, 1.0F, 1.0F).setUv(maxU, 0).setLight(15728880);
 
         poseStack.popPose();
     }
@@ -720,7 +701,7 @@ public class GunRenderingHandler {
         if (mc.player == null || mc.player.tickCount < ReloadHandler.get().getStartReloadTick() || ReloadHandler.get().getReloadTimer() != 5)
             return;
 
-        Item item = ForgeRegistries.ITEMS.getValue(modifiedGun.getProjectile().getItem());
+        Item item = BuiltInRegistries.ITEM.get(modifiedGun.getProjectile().getItem());
         if (item == null)
             return;
 
@@ -730,7 +711,7 @@ public class GunRenderingHandler {
         poseStack.translate(translateX * side, 0, 0);
 
         float interval = GunEnchantmentHelper.getReloadInterval(stack);
-        float reload = ((mc.player.tickCount - ReloadHandler.get().getStartReloadTick() + mc.getFrameTime()) % interval) / interval;
+        float reload = ((mc.player.tickCount - ReloadHandler.get().getStartReloadTick() + mc.getTimer().getGameTimeDeltaPartialTick(false)) % interval) / interval;
         float percent = 1.0F - reload;
         if (percent >= 0.5F) {
             percent = 1.0F - percent;
@@ -795,11 +776,11 @@ public class GunRenderingHandler {
      */
     private float getEquipProgress(float partialTicks) {
         if (this.equippedProgressMainHandField == null) {
-            this.equippedProgressMainHandField = ObfuscationReflectionHelper.findField(ItemInHandRenderer.class, "f_109302_");
+            this.equippedProgressMainHandField = ObfuscationReflectionHelper.findField(ItemInHandRenderer.class, "mainHandHeight");
             this.equippedProgressMainHandField.setAccessible(true);
         }
         if (this.prevEquippedProgressMainHandField == null) {
-            this.prevEquippedProgressMainHandField = ObfuscationReflectionHelper.findField(ItemInHandRenderer.class, "f_109303_");
+            this.prevEquippedProgressMainHandField = ObfuscationReflectionHelper.findField(ItemInHandRenderer.class, "oMainHandHeight");
             this.prevEquippedProgressMainHandField.setAccessible(true);
         }
         ItemInHandRenderer firstPersonRenderer = Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer();
@@ -837,7 +818,6 @@ public class GunRenderingHandler {
 
     @SubscribeEvent
     public void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
-        if (GunMod.cmdCamLoaded && CMDCamHelper.isRollModified()) return;
         if (Config.CLIENT.display.cameraRollEffect.get()) {
             float roll = (float) Mth.lerp(event.getPartialTick(), this.prevImmersiveRoll, this.immersiveRoll);
             roll = (float) Math.sin((roll * Math.PI) / 2.0);

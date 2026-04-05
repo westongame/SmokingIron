@@ -1,11 +1,11 @@
 package com.mrcrayfish.guns.block;
 
+import com.mojang.serialization.MapCodec;
 import com.mrcrayfish.guns.blockentity.WorkbenchBlockEntity;
 import com.mrcrayfish.guns.util.VoxelShapeHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,11 +30,19 @@ import java.util.Map;
  */
 public class WorkbenchBlock extends RotatedObjectBlock implements EntityBlock
 {
+    public static final MapCodec<WorkbenchBlock> CODEC = simpleCodec(WorkbenchBlock::new);
+
     private final Map<BlockState, VoxelShape> SHAPES = new HashMap<>();
 
     public WorkbenchBlock(Block.Properties properties)
     {
         super(properties);
+    }
+
+    @Override
+    protected MapCodec<? extends WorkbenchBlock> codec()
+    {
+        return CODEC;
     }
 
     private VoxelShape getShape(BlockState state)
@@ -67,14 +74,14 @@ public class WorkbenchBlock extends RotatedObjectBlock implements EntityBlock
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player playerEntity, InteractionHand hand, BlockHitResult result)
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player playerEntity, BlockHitResult result)
     {
         if(!world.isClientSide())
         {
             BlockEntity tileEntity = world.getBlockEntity(pos);
             if(tileEntity instanceof MenuProvider)
             {
-                NetworkHooks.openScreen((ServerPlayer) playerEntity, (MenuProvider) tileEntity, pos);
+                ((ServerPlayer) playerEntity).openMenu((MenuProvider) tileEntity, pos);
             }
         }
         return InteractionResult.SUCCESS;

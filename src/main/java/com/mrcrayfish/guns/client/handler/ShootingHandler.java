@@ -5,7 +5,6 @@ import com.mrcrayfish.guns.GunMod;
 import com.mrcrayfish.guns.client.KeyBinds;
 import com.mrcrayfish.guns.common.GripType;
 import com.mrcrayfish.guns.common.Gun;
-import com.mrcrayfish.guns.compat.PlayerReviveHelper;
 import com.mrcrayfish.guns.event.GunFireEvent;
 import com.mrcrayfish.guns.item.GunItem;
 import com.mrcrayfish.guns.network.PacketHandler;
@@ -19,11 +18,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.InputEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
 
 /**
  * Author: MrCrayfish
@@ -66,9 +65,6 @@ public class ShootingHandler
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if(player == null)
-            return;
-
-        if(PlayerReviveHelper.isBleeding(player))
             return;
 
         if(Config.CLIENT.controls.flipControls.get() ? event.isUseItem() : event.isAttack())
@@ -116,11 +112,8 @@ public class ShootingHandler
     }
 
     @SubscribeEvent
-    public void onHandleShooting(TickEvent.ClientTickEvent event)
+    public void onHandleShooting(ClientTickEvent.Pre event)
     {
-        if(event.phase != TickEvent.Phase.START)
-            return;
-
         if(!this.isInGame())
             return;
 
@@ -129,13 +122,9 @@ public class ShootingHandler
         if(player != null)
         {
             ItemStack heldItem = player.getMainHandItem();
-            if(heldItem.getItem() instanceof GunItem && (Gun.hasAmmo(heldItem) || player.isCreative()) && !PlayerReviveHelper.isBleeding(player))
+            if(heldItem.getItem() instanceof GunItem && (Gun.hasAmmo(heldItem) || player.isCreative()))
             {
                 boolean shooting = KeyBinds.getShootMapping().isDown();
-                if(GunMod.controllableLoaded)
-                {
-                    shooting |= ControllerHandler.isShooting();
-                }
                 if(shooting)
                 {
                     if(!this.shooting)
@@ -163,11 +152,8 @@ public class ShootingHandler
     }
 
     @SubscribeEvent
-    public void onPostClientTick(TickEvent.ClientTickEvent event)
+    public void onPostClientTick(ClientTickEvent.Post event)
     {
-        if(event.phase != TickEvent.Phase.END)
-            return;
-
         if(!isInGame())
             return;
 
@@ -175,9 +161,6 @@ public class ShootingHandler
         Player player = mc.player;
         if(player != null)
         {
-            if(PlayerReviveHelper.isBleeding(player))
-                return;
-
             ItemStack heldItem = player.getMainHandItem();
             if(heldItem.getItem() instanceof GunItem)
             {
@@ -213,7 +196,7 @@ public class ShootingHandler
             GunItem gunItem = (GunItem) heldItem.getItem();
             Gun modifiedGun = gunItem.getModifiedGun(heldItem);
 
-            if(MinecraftForge.EVENT_BUS.post(new GunFireEvent.Pre(player, heldItem)))
+            if(NeoForge.EVENT_BUS.post(new GunFireEvent.Pre(player, heldItem)).isCanceled())
                 return;
 
             int rate = GunEnchantmentHelper.getRate(heldItem, modifiedGun);
@@ -221,7 +204,7 @@ public class ShootingHandler
             tracker.addCooldown(heldItem.getItem(), rate);
             PacketHandler.getPlayChannel().sendToServer(new C2SMessageShoot(player));
 
-            MinecraftForge.EVENT_BUS.post(new GunFireEvent.Post(player, heldItem));
+            NeoForge.EVENT_BUS.post(new GunFireEvent.Post(player, heldItem));
         }
     }
 }

@@ -1,42 +1,32 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.client.network.ClientPlayHandler;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-public class S2CMessageStunGrenade extends PlayMessage<S2CMessageStunGrenade>
+public class S2CMessageStunGrenade
 {
-    private double x, y, z;
+    public static final StreamCodec<RegistryFriendlyByteBuf, S2CMessageStunGrenade> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.DOUBLE, S2CMessageStunGrenade::getX,
+            ByteBufCodecs.DOUBLE, S2CMessageStunGrenade::getY,
+            ByteBufCodecs.DOUBLE, S2CMessageStunGrenade::getZ,
+            S2CMessageStunGrenade::new
+    );
 
-    public S2CMessageStunGrenade() {}
+    private final double x;
+    private final double y;
+    private final double z;
 
     public S2CMessageStunGrenade(double x, double y, double z)
     {
-        this.z = z;
-        this.y = y;
         this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
-    @Override
-    public void encode(S2CMessageStunGrenade message, FriendlyByteBuf buffer)
-    {
-        buffer.writeDouble(message.x);
-        buffer.writeDouble(message.y);
-        buffer.writeDouble(message.z);
-    }
-
-    @Override
-    public S2CMessageStunGrenade decode(FriendlyByteBuf buffer)
-    {
-        double x = buffer.readDouble();
-        double y = buffer.readDouble();
-        double z = buffer.readDouble();
-        return new S2CMessageStunGrenade(x, y, z);
-    }
-
-    @Override
-    public void handle(S2CMessageStunGrenade message, MessageContext context)
+    public static void handle(S2CMessageStunGrenade message, MessageContext context)
     {
         context.execute(() -> ClientPlayHandler.handleExplosionStunGrenade(message));
         context.setHandled(true);
@@ -44,16 +34,16 @@ public class S2CMessageStunGrenade extends PlayMessage<S2CMessageStunGrenade>
 
     public double getX()
     {
-        return x;
+        return this.x;
     }
 
     public double getY()
     {
-        return y;
+        return this.y;
     }
 
     public double getZ()
     {
-        return z;
+        return this.z;
     }
 }

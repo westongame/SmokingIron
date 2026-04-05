@@ -1,36 +1,27 @@
 package com.mrcrayfish.guns.particles;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mrcrayfish.guns.init.ModParticleTypes;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 /**
  * Author: MrCrayfish
  */
 public class TrailData implements ParticleOptions
 {
-    public static final Codec<TrailData> CODEC = RecordCodecBuilder.create((builder) -> builder
+    public static final MapCodec<TrailData> CODEC = RecordCodecBuilder.mapCodec((builder) -> builder
             .group(Codec.BOOL.fieldOf("enchanted").forGetter((data) -> data.enchanted))
             .apply(builder, TrailData::new));
 
-    public static final ParticleOptions.Deserializer<TrailData> DESERIALIZER = new ParticleOptions.Deserializer<>() {
-        @Override
-        public TrailData fromCommand(ParticleType<TrailData> particleType, StringReader reader) throws CommandSyntaxException {
-            reader.expect(' ');
-            return new TrailData(reader.readBoolean());
-        }
-
-        @Override
-        public TrailData fromNetwork(ParticleType<TrailData> particleType, FriendlyByteBuf buffer) {
-            return new TrailData(buffer.readBoolean());
-        }
-    };
+    public static final StreamCodec<RegistryFriendlyByteBuf, TrailData> STREAM_CODEC = StreamCodec.of(
+            (buf, data) -> buf.writeBoolean(data.enchanted),
+            (buf) -> new TrailData(buf.readBoolean())
+    );
 
     private boolean enchanted;
 
@@ -48,17 +39,5 @@ public class TrailData implements ParticleOptions
     public ParticleType<?> getType()
     {
         return ModParticleTypes.TRAIL.get();
-    }
-
-    @Override
-    public void writeToNetwork(FriendlyByteBuf buffer)
-    {
-        buffer.writeBoolean(this.enchanted);
-    }
-
-    @Override
-    public String writeToString()
-    {
-        return ForgeRegistries.PARTICLE_TYPES.getKey(this.getType()) + " " + this.enchanted;
     }
 }

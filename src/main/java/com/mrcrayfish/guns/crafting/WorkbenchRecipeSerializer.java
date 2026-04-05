@@ -1,65 +1,62 @@
 package com.mrcrayfish.guns.crafting;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-
-import javax.annotation.Nullable;
 
 /**
  * Author: MrCrayfish
  */
 public class WorkbenchRecipeSerializer implements RecipeSerializer<WorkbenchRecipe>
 {
-    @Override
-    public WorkbenchRecipe fromJson(ResourceLocation recipeId, JsonObject parent)
+    public static final MapCodec<WorkbenchRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
+        instance.group(
+            ItemStack.CODEC.fieldOf("result").forGetter(WorkbenchRecipe::getItem),
+            WorkbenchIngredient.CODEC.codec().listOf().fieldOf("materials").forGetter(r -> r.getMaterials())
+        ).apply(instance, (result, materials) -> new WorkbenchRecipe(result, ImmutableList.copyOf(materials)))
+    );
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, WorkbenchRecipe> STREAM_CODEC = new StreamCodec<>()
     {
-        ImmutableList.Builder<WorkbenchIngredient> builder = ImmutableList.builder();
-        JsonArray input = GsonHelper.getAsJsonArray(parent, "materials");
-        for(int i = 0; i < input.size(); i++)
+        @Override
+        public WorkbenchRecipe decode(RegistryFriendlyByteBuf buffer)
         {
-            JsonObject object = input.get(i).getAsJsonObject();
-            builder.add(WorkbenchIngredient.fromJson(object));
+            ItemStack result = ItemStack.STREAM_CODEC.decode(buffer);
+            ImmutableList.Builder<WorkbenchIngredient> builder = ImmutableList.builder();
+            int size = buffer.readVarInt();
+            for (int i = 0; i < size; i++)
+            {
+                builder.add(WorkbenchIngredient.fromNetwork(buffer));
+            }
+            return new WorkbenchRecipe(result, builder.build());
         }
-        if(!parent.has("result"))
+
+        @Override
+        public void encode(RegistryFriendlyByteBuf buffer, WorkbenchRecipe recipe)
         {
-            throw new JsonSyntaxException("Missing result item entry");
+            ItemStack.STREAM_CODEC.encode(buffer, recipe.getItem());
+            buffer.writeVarInt(recipe.getMaterials().size());
+            for (WorkbenchIngredient ingredient : recipe.getMaterials())
+            {
+                ingredient.toNetwork(buffer);
+            }
         }
-        JsonObject resultObject = GsonHelper.getAsJsonObject(parent, "result");
-        ItemStack resultItem = ShapedRecipe.itemStackFromJson(resultObject);
-        return new WorkbenchRecipe(recipeId, resultItem, builder.build());
+    };
+
+    @Override
+    public MapCodec<WorkbenchRecipe> codec()
+    {
+        return CODEC;
     }
 
-    @Nullable
     @Override
-    public WorkbenchRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer)
+    public StreamCodec<RegistryFriendlyByteBuf, WorkbenchRecipe> streamCodec()
     {
-        ItemStack result = buffer.readItem();
-        ImmutableList.Builder<WorkbenchIngredient> builder = ImmutableList.builder();
-        int size = buffer.readVarInt();
-        for(int i = 0; i < size; i++)
-        {
-            builder.add((WorkbenchIngredient) Ingredient.fromNetwork(buffer));
-        }
-        return new WorkbenchRecipe(recipeId, result, builder.build());
-    }
-
-    @Override
-    public void toNetwork(FriendlyByteBuf buffer, WorkbenchRecipe recipe)
-    {
-        buffer.writeItem(recipe.getItem());
-        buffer.writeVarInt(recipe.getMaterials().size());
-        for(WorkbenchIngredient ingredient : recipe.getMaterials())
-        {
-            ingredient.toNetwork(buffer);
-        }
+        return STREAM_CODEC;
     }
 }

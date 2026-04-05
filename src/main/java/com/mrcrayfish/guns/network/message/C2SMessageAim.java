@@ -1,45 +1,35 @@
 package com.mrcrayfish.guns.network.message;
 
 import com.mrcrayfish.framework.api.network.MessageContext;
-import com.mrcrayfish.framework.api.network.message.PlayMessage;
 import com.mrcrayfish.guns.init.ModSyncedDataKeys;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 
-public class C2SMessageAim extends PlayMessage<C2SMessageAim>
+public class C2SMessageAim
 {
-	private boolean aiming;
+    public static final StreamCodec<RegistryFriendlyByteBuf, C2SMessageAim> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, msg -> msg.aiming,
+            C2SMessageAim::new
+    );
 
-	public C2SMessageAim() {}
+    private final boolean aiming;
 
-	public C2SMessageAim(boolean aiming)
-	{
-		this.aiming = aiming;
-	}
+    public C2SMessageAim(boolean aiming)
+    {
+        this.aiming = aiming;
+    }
 
-	@Override
-	public void encode(C2SMessageAim message, FriendlyByteBuf buffer)
-	{
-		buffer.writeBoolean(message.aiming);
-	}
-
-	@Override
-	public C2SMessageAim decode(FriendlyByteBuf buffer)
-	{
-		return new C2SMessageAim(buffer.readBoolean());
-	}
-
-	@Override
-	public void handle(C2SMessageAim message, MessageContext context)
-	{
-		context.execute(() ->
-		{
-			ServerPlayer player = context.getPlayer();
-			if(player != null && !player.isSpectator())
-			{
-				ModSyncedDataKeys.AIMING.setValue(player, message.aiming);
-			}
-		});
-		context.setHandled(true);
-	}
+    public static void handle(C2SMessageAim message, MessageContext context)
+    {
+        context.execute(() -> context.getPlayer().ifPresent(p ->
+        {
+            if(p instanceof ServerPlayer player && !player.isSpectator())
+            {
+                ModSyncedDataKeys.AIMING.setValue(player, message.aiming);
+            }
+        }));
+        context.setHandled(true);
+    }
 }

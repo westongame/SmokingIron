@@ -1,5 +1,6 @@
 package com.mrcrayfish.guns.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +20,9 @@ public abstract class RotatedObjectBlock extends HorizontalDirectionalBlock
         super(properties);
         this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH));
     }
+
+    @Override
+    protected abstract MapCodec<? extends RotatedObjectBlock> codec();
 
     @Override
     public boolean useShapeForLightOcclusion(BlockState state)

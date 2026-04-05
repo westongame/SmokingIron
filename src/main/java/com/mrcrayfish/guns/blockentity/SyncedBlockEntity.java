@@ -1,6 +1,7 @@
 package com.mrcrayfish.guns.blockentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -39,9 +40,9 @@ public class SyncedBlockEntity extends BlockEntity
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries)
     {
-        return this.saveWithFullMetadata();
+        return this.saveWithFullMetadata(registries);
     }
 
     @Override
@@ -51,8 +52,12 @@ public class SyncedBlockEntity extends BlockEntity
     }
 
     @Override
-    public void onDataPacket(final Connection net, final ClientboundBlockEntityDataPacket pkt)
+    public void onDataPacket(final Connection net, final ClientboundBlockEntityDataPacket pkt, HolderLookup.Provider registries)
     {
-        this.deserializeNBT(pkt.getTag());
+        CompoundTag tag = pkt.getTag();
+        if(tag != null)
+        {
+            this.loadAdditional(tag, registries);
+        }
     }
 }
