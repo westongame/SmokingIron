@@ -18,7 +18,6 @@ public class PacketHandler
                 .registerPlayMessage("reload", C2SMessageReload.class, C2SMessageReload.STREAM_CODEC, C2SMessageReload::handle, PacketFlow.SERVERBOUND)
                 .registerPlayMessage("shoot", C2SMessageShoot.class, C2SMessageShoot.STREAM_CODEC, C2SMessageShoot::handle, PacketFlow.SERVERBOUND)
                 .registerPlayMessage("unload", C2SMessageUnload.class, C2SMessageUnload.STREAM_CODEC, C2SMessageUnload::handle, PacketFlow.SERVERBOUND)
-                .registerPlayMessage("stun_grenade", S2CMessageStunGrenade.class, S2CMessageStunGrenade.STREAM_CODEC, S2CMessageStunGrenade::handle, PacketFlow.CLIENTBOUND)
                 .registerPlayMessage("craft", C2SMessageCraft.class, C2SMessageCraft.STREAM_CODEC, C2SMessageCraft::handle, PacketFlow.SERVERBOUND)
                 .registerPlayMessage("bullet_trail", S2CMessageBulletTrail.class, S2CMessageBulletTrail.STREAM_CODEC, S2CMessageBulletTrail::handle, PacketFlow.CLIENTBOUND)
                 .registerPlayMessage("attachments", C2SMessageAttachments.class, C2SMessageAttachments.STREAM_CODEC, C2SMessageAttachments::handle, PacketFlow.SERVERBOUND)

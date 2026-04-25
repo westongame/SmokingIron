@@ -14,7 +14,6 @@ import com.mrcrayfish.guns.network.message.S2CMessageGunSound;
 import com.mrcrayfish.guns.network.message.S2CMessageProjectileHitBlock;
 import com.mrcrayfish.guns.network.message.S2CMessageProjectileHitEntity;
 import com.mrcrayfish.guns.network.message.S2CMessageRemoveProjectile;
-import com.mrcrayfish.guns.network.message.S2CMessageStunGrenade;
 import com.mrcrayfish.guns.network.message.S2CMessageUpdateGuns;
 import com.mrcrayfish.guns.particles.BulletHoleData;
 import net.minecraft.client.Minecraft;
@@ -103,35 +102,6 @@ public class ClientPlayHandler
                 BulletTrailRenderingHandler.get().add(new BulletTrail(entityIds[i], positions[i], motions[i], item, trailColor, trailLengthMultiplier, life, gravity, shooterId, enchanted, data));
             }
         }
-    }
-
-    public static void handleExplosionStunGrenade(S2CMessageStunGrenade message)
-    {
-        Minecraft mc = Minecraft.getInstance();
-        ParticleEngine particleManager = mc.particleEngine;
-        Level world = Objects.requireNonNull(mc.level);
-        double x = message.getX();
-        double y = message.getY();
-        double z = message.getZ();
-
-        /* Spawn lingering smoke particles */
-        for(int i = 0; i < 30; i++)
-        {
-            spawnParticle(particleManager, ParticleTypes.CLOUD, x, y, z, world.random, 0.2);
-        }
-
-        /* Spawn fast moving smoke/spark particles */
-        for(int i = 0; i < 30; i++)
-        {
-            Particle smoke = spawnParticle(particleManager, ParticleTypes.SMOKE, x, y, z, world.random, 4.0);
-            smoke.setLifetime((int) ((8 / (Math.random() * 0.1 + 0.4)) * 0.5));
-            spawnParticle(particleManager, ParticleTypes.CRIT, x, y, z, world.random, 4.0);
-        }
-    }
-
-    private static Particle spawnParticle(ParticleEngine manager, ParticleOptions data, double x, double y, double z, RandomSource rand, double velocityMultiplier)
-    {
-        return manager.createParticle(data, x, y, z, (rand.nextDouble() - 0.5) * velocityMultiplier, (rand.nextDouble() - 0.5) * velocityMultiplier, (rand.nextDouble() - 0.5) * velocityMultiplier);
     }
 
     public static void handleProjectileHitBlock(S2CMessageProjectileHitBlock message)

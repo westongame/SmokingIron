@@ -20,7 +20,6 @@ public class Config
         public final Display display;
         public final Particle particle;
         public final Controls controls;
-        public final Experimental experimental;
         public final ModConfigSpec.BooleanValue hideConfigButton;
         public final ModConfigSpec.EnumValue<ButtonAlignment> buttonAlignment;
 
@@ -32,7 +31,6 @@ public class Config
                 this.display = new Display(builder);
                 this.particle = new Particle(builder);
                 this.controls = new Controls(builder);
-                this.experimental = new Experimental(builder);
             }
             builder.pop();
             this.hideConfigButton = builder.comment("If enabled, hides the config button from the backpack screen").define("hideConfigButton", false);
@@ -143,17 +141,6 @@ public class Config
         }
     }
 
-    public static class Experimental
-    {
-        public Experimental(ModConfigSpec.Builder builder)
-        {
-            builder.comment("Experimental options").push("experimental");
-            {
-            }
-            builder.pop();
-        }
-    }
-
     /**
      * Common config options
      */
@@ -162,9 +149,7 @@ public class Config
         public final Gameplay gameplay;
         public final Network network;
         public final AggroMobs aggroMobs;
-        public final Missiles missiles;
         public final Grenades grenades;
-        public final StunGrenades stunGrenades;
         public final ProjectileSpread projectileSpread;
 
         public Common(ModConfigSpec.Builder builder)
@@ -174,9 +159,7 @@ public class Config
                 this.gameplay = new Gameplay(builder);
                 this.network = new Network(builder);
                 this.aggroMobs = new AggroMobs(builder);
-                this.missiles = new Missiles(builder);
                 this.grenades = new Grenades(builder);
-                this.stunGrenades = new StunGrenades(builder);
                 this.projectileSpread = new ProjectileSpread(builder);
             }
             builder.pop();
@@ -282,25 +265,6 @@ public class Config
     }
 
     /**
-     * Missile related config options
-     */
-    public static class Missiles
-    {
-        public final ModConfigSpec.BooleanValue enableBlockRemoval;
-        public final ModConfigSpec.DoubleValue explosionRadius;
-
-        public Missiles(ModConfigSpec.Builder builder)
-        {
-            builder.comment("Properties relating to missiles").push("missiles");
-            {
-                this.enableBlockRemoval = builder.comment("If enabled, allows block removal on explosions").define("enableBlockRemoval", false);
-                this.explosionRadius = builder.comment("The max distance which the explosion is effective to").defineInRange("explosionRadius", 5.0, 0.0, Double.MAX_VALUE);
-            }
-            builder.pop();
-        }
-    }
-
-    /**
      * Grenade related config options
      */
     public static class Grenades
@@ -314,90 +278,6 @@ public class Config
             {
                 this.enableBlockRemoval = builder.comment("If enabled, allows block removal on explosions").define("enableBlockRemoval", false);
                 this.explosionRadius = builder.comment("The max distance which the explosion is effective to").defineInRange("explosionRadius", 5.0, 0.0, Double.MAX_VALUE);
-            }
-            builder.pop();
-        }
-    }
-
-    /**
-     * Stun Grenade related config options
-     */
-    public static class StunGrenades
-    {
-        public final Blind blind;
-        public final Deafen deafen;
-
-        public StunGrenades(ModConfigSpec.Builder builder)
-        {
-            builder.comment("Properties relating to stun grenades").push("stun_grenades");
-            {
-                this.blind = new Blind(builder);
-                this.deafen = new Deafen(builder);
-            }
-            builder.pop();
-        }
-    }
-
-    /**
-     * Stun grenade blinding related config options
-     */
-    public static class Blind
-    {
-        public final EffectCriteria criteria;
-        public final ModConfigSpec.BooleanValue blindMobs;
-
-        public Blind(ModConfigSpec.Builder builder)
-        {
-            builder.comment("Blinding properties of stun grenades").push("blind");
-            {
-                this.criteria = new EffectCriteria(builder, 15, 220, 10, 170, 0.75, true);
-                this.blindMobs = builder.comment("If true, hostile mobs will be unable to target entities while they are blinded by a stun grenade.").define("blindMobs", true);
-            }
-            builder.pop();
-        }
-    }
-
-    /**
-     * Stun grenade deafening related config options
-     */
-    public static class Deafen
-    {
-        public final EffectCriteria criteria;
-        public final ModConfigSpec.BooleanValue panicMobs;
-
-        public Deafen(ModConfigSpec.Builder builder)
-        {
-            builder.comment("Deafening properties of stun grenades").push("deafen");
-            {
-                this.criteria = new EffectCriteria(builder, 15, 280, 100, 360, 0.75, false);
-                this.panicMobs = builder.comment("If true, peaceful mobs will panic upon being deafened by a stun grenade.").define("panicMobs", true);
-            }
-            builder.pop();
-        }
-    }
-
-    /**
-     * Config options for effect criteria
-     */
-    public static class EffectCriteria
-    {
-        public final ModConfigSpec.DoubleValue radius;
-        public final ModConfigSpec.IntValue durationMax;
-        public final ModConfigSpec.IntValue durationMin;
-        public final ModConfigSpec.DoubleValue angleEffect;
-        public final ModConfigSpec.DoubleValue angleAttenuationMax;
-        public final ModConfigSpec.BooleanValue raytraceOpaqueBlocks;
-
-        public EffectCriteria(ModConfigSpec.Builder builder, double radius, int durationMax, int durationMin, double angleEffect, double angleAttenuationMax, boolean raytraceOpaqueBlocks)
-        {
-            builder.push("effect_criteria");
-            {
-                this.radius = builder.comment("Grenade must be no more than this many meters away to have an effect.").defineInRange("radius", radius, 0.0, Double.MAX_VALUE);
-                this.durationMax = builder.comment("Effect will have this duration (in ticks) if the grenade is directly at the player's eyes while looking directly at it.").defineInRange("durationMax", durationMax, 0, Integer.MAX_VALUE);
-                this.durationMin = builder.comment("Effect will have this duration (in ticks) if the grenade is the maximum distance from the player's eyes while looking directly at it.").defineInRange("durationMin", durationMin, 0, Integer.MAX_VALUE);
-                this.angleEffect = builder.comment("Angle between the eye/looking direction and the eye/grenade direction must be no more than half this many degrees to have an effect.").defineInRange("angleEffect", angleEffect, 0, 360);
-                this.angleAttenuationMax = builder.comment("After duration is attenuated by distance, it will be further attenuated depending on the angle (in degrees) between the eye/looking direction and the eye/grenade direction. This is done by multiplying it by 1 (no attenuation) if the angle is 0; and by this value if the angle is the maximum within the angle of effect.").defineInRange("angleAttenuationMax", angleAttenuationMax, 0.0, 1.0);
-                this.raytraceOpaqueBlocks = builder.comment("If true, the effect is only applied if the line between the eyes and the grenade does not intersect any non-liquid blocks with an opacity greater than 0.").define("raytraceOpaqueBlocks", raytraceOpaqueBlocks);
             }
             builder.pop();
         }
@@ -427,11 +307,6 @@ public class Config
      */
     public static class Server
     {
-        public final ModConfigSpec.IntValue alphaOverlay;
-        public final ModConfigSpec.IntValue alphaFadeThreshold;
-        public final ModConfigSpec.DoubleValue soundPercentage;
-        public final ModConfigSpec.IntValue soundFadeThreshold;
-        public final ModConfigSpec.DoubleValue ringVolume;
         public final ModConfigSpec.DoubleValue gunShotMaxDistance;
         public final ModConfigSpec.DoubleValue reloadMaxDistance;
         public final ModConfigSpec.BooleanValue enableCameraRecoil;
@@ -442,16 +317,6 @@ public class Config
         {
             builder.push("server");
             {
-                builder.comment("Stun Grenade related properties").push("grenade");
-                {
-                    this.alphaOverlay = builder.comment("After the duration drops to this many ticks, the transparency of the overlay when blinded will gradually fade to 0 alpha.").defineInRange("alphaOverlay", 255, 0, 255);
-                    this.alphaFadeThreshold = builder.comment("Transparency of the overlay when blinded will be this alpha value, before eventually fading to 0 alpha.").defineInRange("alphaFadeThreshold", 40, 0, Integer.MAX_VALUE);
-                    this.soundPercentage = builder.comment("Volume of most game sounds when deafened will play at this percent, before eventually fading back to %100.").defineInRange("soundPercentage", 0.05, 0.0, 1.0);
-                    this.soundFadeThreshold = builder.comment("After the duration drops to this many ticks, the ringing volume will gradually fade to 0 and other sound volumes will fade back to %100.").defineInRange("soundFadeThreshold", 90, 0, Integer.MAX_VALUE);
-                    this.ringVolume = builder.comment("Volume of the ringing sound when deafened will play at this volume, before eventually fading to 0.").defineInRange("ringVolume", 1.0, 0.0, 1.0);
-                }
-                builder.pop();
-
                 builder.comment("Audio properties").push("audio");
                 {
                     this.gunShotMaxDistance = builder.comment("The maximum distance weapons can be heard by players.").defineInRange("gunShotMaxDistance", 100, 0, Double.MAX_VALUE);

@@ -54,7 +54,6 @@
     "cock": "cgm:item.rifle.cock",
     "enchantedFire": "cgm:item.rifle.enchanted_fire",
     "fire": "cgm:item.rifle.fire",
-    "reload": "cgm:item.pistol.reload",
-    "silencedFire": "cgm:item.rifle.silenced_fire"
+    "reload": "cgm:item.pistol.reload"
   }
 }

@@ -51,7 +51,6 @@
     "cock": "cgm:item.heavy_rifle.cock",
     "enchantedFire": "cgm:item.heavy_rifle.enchanted_fire",
     "fire": "cgm:item.heavy_rifle.fire",
-    "reload": "cgm:item.pistol.reload",
-    "silencedFire": "cgm:item.heavy_rifle.silenced_fire"
+    "reload": "cgm:item.pistol.reload"
   }
 }

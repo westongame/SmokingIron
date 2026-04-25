@@ -2,10 +2,8 @@ package com.mrcrayfish.guns.init;
 
 import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.entity.GrenadeEntity;
-import com.mrcrayfish.guns.entity.MissileEntity;
 import com.mrcrayfish.guns.entity.ProjectileEntity;
 import com.mrcrayfish.guns.entity.ThrowableGrenadeEntity;
-import com.mrcrayfish.guns.entity.ThrowableStunGrenadeEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -27,9 +25,7 @@ public class ModEntities
 
     public static final DeferredHolder<EntityType<?>, EntityType<ProjectileEntity>> PROJECTILE = registerProjectile("projectile", ProjectileEntity::new);
     public static final DeferredHolder<EntityType<?>, EntityType<GrenadeEntity>> GRENADE = registerBasic("grenade", GrenadeEntity::new);
-    public static final DeferredHolder<EntityType<?>, EntityType<MissileEntity>> MISSILE = registerBasic("missile", MissileEntity::new);
     public static final DeferredHolder<EntityType<?>, EntityType<ThrowableGrenadeEntity>> THROWABLE_GRENADE = registerBasic("throwable_grenade", ThrowableGrenadeEntity::new);
-    public static final DeferredHolder<EntityType<?>, EntityType<ThrowableStunGrenadeEntity>> THROWABLE_STUN_GRENADE = registerBasic("throwable_stun_grenade", ThrowableStunGrenadeEntity::new);
 
     @SuppressWarnings("unchecked")
     private static <T extends Entity> DeferredHolder<EntityType<?>, EntityType<T>> registerBasic(String id, BiFunction<EntityType<T>, Level, T> function)

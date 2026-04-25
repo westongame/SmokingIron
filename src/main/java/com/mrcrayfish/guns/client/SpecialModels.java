@@ -16,18 +16,11 @@ import net.neoforged.fml.common.EventBusSubscriber;
 @EventBusSubscriber(modid = Reference.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public enum SpecialModels
 {
-    ASSAULT_RIFLE("gun/assault_rifle"),
-    BAZOOKA("gun/bazooka"),
     HEAVY_RIFLE("gun/heavy_rifle"),
-    MACHINE_PISTOL("gun/machine_pistol"),
     PISTOL("gun/pistol"),
     RIFLE("gun/rifle"),
     SHOTGUN("gun/shotgun"),
-    FLAME("flame"),
-    MINI_GUN_BASE("mini_gun_base"),
-    MINI_GUN_BARRELS("mini_gun_barrels"),
-    GRENADE_LAUNCHER_BASE("grenade_launcher_base"),
-    GRENADE_LAUNCHER_CYLINDER("grenade_launcher_cylinder");
+    FLAME("flame");
 
     /**
      * The location of an item model in the [MOD_ID]/models/special/[NAME] folder

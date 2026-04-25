@@ -4,8 +4,6 @@ import com.mrcrayfish.guns.GunMod;
 import com.mrcrayfish.guns.client.handler.*;
 import com.mrcrayfish.guns.client.GunItemStackRenderer;
 import com.mrcrayfish.guns.client.render.gun.ModelOverrides;
-import com.mrcrayfish.guns.client.render.gun.model.GrenadeLauncherModel;
-import com.mrcrayfish.guns.client.render.gun.model.MiniGunModel;
 import com.mrcrayfish.guns.client.render.gun.model.SimpleModel;
 import com.mrcrayfish.guns.client.screen.AttachmentScreen;
 import com.mrcrayfish.guns.client.screen.WorkbenchScreen;
@@ -72,7 +70,6 @@ public class ClientHandler {
         NeoForge.EVENT_BUS.register(RecoilHandler.get());
         NeoForge.EVENT_BUS.register(ReloadHandler.get());
         NeoForge.EVENT_BUS.register(ShootingHandler.get());
-        NeoForge.EVENT_BUS.register(SoundHandler.get());
         NeoForge.EVENT_BUS.register(new PlayerModelHandler());
 
         if(ModList.get().isLoaded("firstperson"))
@@ -118,12 +115,7 @@ public class ClientHandler {
 
     private static void registerModelOverrides() {
         /* Weapons */
-        ModelOverrides.register(ModItems.ASSAULT_RIFLE.get(), new SimpleModel(SpecialModels.ASSAULT_RIFLE::getModel));
-        ModelOverrides.register(ModItems.BAZOOKA.get(), new SimpleModel(SpecialModels.BAZOOKA::getModel));
-        ModelOverrides.register(ModItems.GRENADE_LAUNCHER.get(), new GrenadeLauncherModel());
         ModelOverrides.register(ModItems.HEAVY_RIFLE.get(), new SimpleModel(SpecialModels.HEAVY_RIFLE::getModel));
-        ModelOverrides.register(ModItems.MACHINE_PISTOL.get(), new SimpleModel(SpecialModels.MACHINE_PISTOL::getModel));
-        ModelOverrides.register(ModItems.MINI_GUN.get(), new MiniGunModel());
         ModelOverrides.register(ModItems.PISTOL.get(), new SimpleModel(SpecialModels.PISTOL::getModel));
         ModelOverrides.register(ModItems.RIFLE.get(), new SimpleModel(SpecialModels.RIFLE::getModel));
         ModelOverrides.register(ModItems.SHOTGUN.get(), new SimpleModel(SpecialModels.SHOTGUN::getModel));

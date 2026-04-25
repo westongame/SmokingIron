@@ -56,29 +56,6 @@ public class RecipeGen extends RecipeProvider
                 .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 24))
                 .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
                 .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.GRENADE_LAUNCHER.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 32))
-                .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.BAZOOKA.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 44))
-                .addIngredient(Items.REDSTONE, 4)
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.DYES_RED, 1))
-                .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .addCriterion("has_redstone", has(Items.REDSTONE))
-                .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.MINI_GUN.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 38))
-                .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.ASSAULT_RIFLE.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 28))
-                .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.MACHINE_PISTOL.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 20))
-                .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
-                .build(consumer);
         WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.HEAVY_RIFLE.get())
                 .addIngredient(WorkbenchIngredient.of(Tags.Items.INGOTS_IRON, 36))
                 .addCriterion("has_iron_ingot", has(Tags.Items.INGOTS_IRON))
@@ -105,25 +82,11 @@ public class RecipeGen extends RecipeProvider
                 .addCriterion("has_gold_nugget", has(Tags.Items.NUGGETS_GOLD))
                 .addCriterion("has_gunpowder", has(Tags.Items.GUNPOWDERS))
                 .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.MISSILE.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.NUGGETS_IRON, 2))
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.GUNPOWDERS, 4))
-                .addCriterion("has_iron_ingot", has(Tags.Items.NUGGETS_IRON))
-                .addCriterion("has_gunpowder", has(Tags.Items.GUNPOWDERS))
-                .build(consumer);
         WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.GRENADE.get(), 2)
                 .addIngredient(WorkbenchIngredient.of(Tags.Items.NUGGETS_IRON, 1))
                 .addIngredient(WorkbenchIngredient.of(Tags.Items.GUNPOWDERS, 4))
                 .addCriterion("has_iron_ingot", has(Tags.Items.NUGGETS_IRON))
                 .addCriterion("has_gunpowder", has(Tags.Items.GUNPOWDERS))
-                .build(consumer);
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.STUN_GRENADE.get(), 2)
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.NUGGETS_IRON, 1))
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.GUNPOWDERS, 2))
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.DUSTS_GLOWSTONE, 4))
-                .addCriterion("has_iron_ingot", has(Tags.Items.NUGGETS_IRON))
-                .addCriterion("has_gunpowder", has(Tags.Items.GUNPOWDERS))
-                .addCriterion("has_glowstone", has(Tags.Items.DUSTS_GLOWSTONE))
                 .build(consumer);
 
         // Scope Attachments
@@ -150,13 +113,6 @@ public class RecipeGen extends RecipeProvider
                 .addCriterion("has_iron_ingot", has(Tags.Items.NUGGETS_IRON))
                 .addCriterion("has_amethyst", has(Tags.Items.GEMS_AMETHYST))
                 .addCriterion("has_black_dye", has(Tags.Items.DYES_BLACK))
-                .build(consumer);
-
-        // Barrel Attachments
-        WorkbenchRecipeBuilder.crafting(RecipeCategory.COMBAT, ModItems.SILENCER.get())
-                .addIngredient(WorkbenchIngredient.of(Tags.Items.NUGGETS_IRON, 4))
-                .addIngredient(WorkbenchIngredient.of(Items.SPONGE, 1))
-                .addCriterion("has_iron_ingot", has(Tags.Items.NUGGETS_IRON))
                 .build(consumer);
 
         // Stock Attachments

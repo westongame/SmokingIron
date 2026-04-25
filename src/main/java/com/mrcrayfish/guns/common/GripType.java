@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.client.render.IHeldAnimation;
-import com.mrcrayfish.guns.client.render.pose.BazookaPose;
-import com.mrcrayfish.guns.client.render.pose.MiniGunPose;
 import com.mrcrayfish.guns.client.render.pose.OneHandedPose;
 import com.mrcrayfish.guns.client.render.pose.TwoHandedPose;
 import net.minecraft.resources.ResourceLocation;
@@ -27,20 +25,9 @@ public class GripType
     public static final GripType ONE_HANDED = new GripType(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "one_handed"), new OneHandedPose());
 
     /**
-     * A grip type designed for weapons that are held with two hands, like an assault rifle
+     * A grip type designed for weapons that are held with two hands, like a rifle
      */
     public static final GripType TWO_HANDED = new GripType(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "two_handed"), new TwoHandedPose());
-
-    /**
-     * A custom grip type designed for the mini gun simply due it's nature of being a completely
-     * unique way to hold the weapon
-     */
-    public static final GripType MINI_GUN = new GripType(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "mini_gun"), new MiniGunPose());
-
-    /**
-     * A custom grip type designed for the bazooka.
-     */
-    public static final GripType BAZOOKA = new GripType(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "bazooka"), new BazookaPose());
 
     /**
      * A common method to set up a transformation of the weapon onto the players' back.
@@ -90,8 +77,6 @@ public class GripType
         /* Registers the standard grip types when the class is loaded */
         registerType(ONE_HANDED);
         registerType(TWO_HANDED);
-        registerType(MINI_GUN);
-        registerType(BAZOOKA);
     }
 
     /**

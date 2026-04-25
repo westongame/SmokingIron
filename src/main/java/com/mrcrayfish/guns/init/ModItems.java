@@ -4,14 +4,11 @@ import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.common.Attachments;
 import com.mrcrayfish.guns.common.GunModifiers;
 import com.mrcrayfish.guns.item.AmmoItem;
-import com.mrcrayfish.guns.item.BarrelItem;
 import com.mrcrayfish.guns.item.GrenadeItem;
 import com.mrcrayfish.guns.item.GunItem;
 import com.mrcrayfish.guns.item.ScopeItem;
 import com.mrcrayfish.guns.item.StockItem;
-import com.mrcrayfish.guns.item.StunGrenadeItem;
 import com.mrcrayfish.guns.item.UnderBarrelItem;
-import com.mrcrayfish.guns.item.attachment.impl.Barrel;
 import com.mrcrayfish.guns.item.attachment.impl.Stock;
 import com.mrcrayfish.guns.item.attachment.impl.UnderBarrel;
 import net.minecraft.world.item.Item;
@@ -26,27 +23,17 @@ public class ModItems
     public static final DeferredHolder<Item, GunItem> PISTOL = REGISTER.register("pistol", () -> new GunItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> SHOTGUN = REGISTER.register("shotgun", () -> new GunItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> RIFLE = REGISTER.register("rifle", () -> new GunItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, Item> GRENADE_LAUNCHER = REGISTER.register("grenade_launcher", () -> new GunItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, Item> BAZOOKA = REGISTER.register("bazooka", () -> new GunItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, Item> MINI_GUN = REGISTER.register("mini_gun", () -> new GunItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, GunItem> ASSAULT_RIFLE = REGISTER.register("assault_rifle", () -> new GunItem(new Item.Properties().stacksTo(1)));
-    public static final DeferredHolder<Item, Item> MACHINE_PISTOL = REGISTER.register("machine_pistol", () -> new GunItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> HEAVY_RIFLE = REGISTER.register("heavy_rifle", () -> new GunItem(new Item.Properties().stacksTo(1)));
 
     public static final DeferredHolder<Item, Item> BASIC_BULLET = REGISTER.register("basic_bullet", () -> new AmmoItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> ADVANCED_AMMO = REGISTER.register("advanced_bullet", () -> new AmmoItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> SHELL = REGISTER.register("shell", () -> new AmmoItem(new Item.Properties()));
-    public static final DeferredHolder<Item, Item> MISSILE = REGISTER.register("missile", () -> new AmmoItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> GRENADE = REGISTER.register("grenade", () -> new GrenadeItem(new Item.Properties(), 20 * 4));
-    public static final DeferredHolder<Item, Item> STUN_GRENADE = REGISTER.register("stun_grenade", () -> new StunGrenadeItem(new Item.Properties(), 72000));
 
     /* Scope Attachments */
     public static final DeferredHolder<Item, Item> SHORT_SCOPE = REGISTER.register("short_scope", () -> new ScopeItem(Attachments.SHORT_SCOPE, new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> MEDIUM_SCOPE = REGISTER.register("medium_scope", () -> new ScopeItem(Attachments.MEDIUM_SCOPE, new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> LONG_SCOPE = REGISTER.register("long_scope", () -> new ScopeItem(Attachments.LONG_SCOPE, new Item.Properties().stacksTo(1)));
-
-    /* Barrel Attachments */
-    public static final DeferredHolder<Item, Item> SILENCER = REGISTER.register("silencer", () -> new BarrelItem(Barrel.create(8.0F, GunModifiers.SILENCED, GunModifiers.REDUCED_DAMAGE), new Item.Properties().stacksTo(1)));
 
     /* Stock Attachments */
     public static final DeferredHolder<Item, Item> LIGHT_STOCK = REGISTER.register("light_stock", () -> new StockItem(Stock.create(GunModifiers.BETTER_CONTROL), new Item.Properties().stacksTo(1), false));

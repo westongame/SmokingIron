@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mrcrayfish.guns.Config;
 import com.mrcrayfish.guns.Reference;
 import com.mrcrayfish.guns.client.render.crosshair.Crosshair;
-import com.mrcrayfish.guns.client.render.crosshair.TechCrosshair;
 import com.mrcrayfish.guns.client.render.crosshair.TexturedCrosshair;
 import com.mrcrayfish.guns.event.GunFireEvent;
 import com.mrcrayfish.guns.item.GunItem;
@@ -51,16 +50,7 @@ public class CrosshairHandler
         this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "better_default")));
         this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "circle")));
         this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "filled_circle"), false));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "square")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "round")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "arrow")));
         this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "dot")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "box")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "hit_marker")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "line")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "t")));
-        this.register(new TexturedCrosshair(ResourceLocation.fromNamespaceAndPath(Reference.MOD_ID, "smiley")));
-        this.register(new TechCrosshair());
     }
 
     /**

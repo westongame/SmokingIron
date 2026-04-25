@@ -11,7 +11,6 @@ import com.mrcrayfish.guns.common.NetworkGunManager;
 import com.mrcrayfish.guns.common.ProjectileManager;
 import com.mrcrayfish.guns.datagen.*;
 import com.mrcrayfish.guns.entity.GrenadeEntity;
-import com.mrcrayfish.guns.entity.MissileEntity;
 import com.mrcrayfish.guns.init.*;
 import com.mrcrayfish.guns.network.PacketHandler;
 import net.minecraft.core.HolderLookup;
@@ -48,7 +47,6 @@ public class GunMod
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.serverSpec);
         ModBlocks.REGISTER.register(bus);
         ModContainers.REGISTER.register(bus);
-        ModEffects.REGISTER.register(bus);
 
         ModEntities.REGISTER.register(bus);
         ModItems.REGISTER.register(bus);
@@ -84,7 +82,6 @@ public class GunMod
             FrameworkAPI.registerSyncedDataKey(ModSyncedDataKeys.SHOOTING);
             // Login data is now sent via S2CMessageUpdateGuns on player join (see ServerPlayHandler/NetworkGunManager)
             ProjectileManager.getInstance().registerFactory(ModItems.GRENADE.get(), (worldIn, entity, weapon, item, modifiedGun) -> new GrenadeEntity(ModEntities.GRENADE.get(), worldIn, entity, weapon, item, modifiedGun));
-            ProjectileManager.getInstance().registerFactory(ModItems.MISSILE.get(), (worldIn, entity, weapon, item, modifiedGun) -> new MissileEntity(ModEntities.MISSILE.get(), worldIn, entity, weapon, item, modifiedGun));
             if(Config.COMMON.gameplay.improvedHitboxes.get())
             {
                 NeoForge.EVENT_BUS.register(new BoundingBoxManager());
@@ -109,7 +106,6 @@ public class GunMod
         generator.addProvider(event.includeServer(), blockTagGen);
         generator.addProvider(event.includeServer(), new ItemTagGen(output, lookupProvider, blockTagGen.contentsGetter(), existingFileHelper));
         generator.addProvider(event.includeServer(), new GunGen(output, lookupProvider));
-        //generator.addProvider(event.includeServer(), new DamageTypeGen(output, lookupProvider, existingFileHelper));
     }
 
     public static boolean isDebugging()

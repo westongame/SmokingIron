@@ -50,7 +50,6 @@
     "cock": "cgm:item.shotgun.cock",
     "enchantedFire": "cgm:item.shotgun.enchanted_fire",
     "fire": "cgm:item.shotgun.fire",
-    "reload": "cgm:item.pistol.reload",
-    "silencedFire": "cgm:item.shotgun.silenced_fire"
+    "reload": "cgm:item.pistol.reload"
   }
 }

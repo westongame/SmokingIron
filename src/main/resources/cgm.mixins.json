@@ -10,7 +10,6 @@
     "common.SittingPhaseMixin"
   ],
   "client": [
-    "client.GameRendererMixin",
     "client.ItemInHandLayerMixin",
     "client.LevelRendererMixin",
     "client.MinecraftMixin",

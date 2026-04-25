@@ -3,7 +3,6 @@ package com.mrcrayfish.guns.client.render.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.mrcrayfish.guns.entity.ThrowableGrenadeEntity;
-import com.mrcrayfish.guns.entity.ThrowableStunGrenadeEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -11,7 +10,6 @@ import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemDisplayContext;
 
 import javax.annotation.Nullable;
@@ -47,13 +45,6 @@ public class ThrowableGrenadeRenderer extends EntityRenderer<ThrowableGrenadeEnt
         poseStack.translate(0, 0.15, 0);
         poseStack.mulPose(Axis.XP.rotationDegrees(-rotation));
         poseStack.translate(0, -0.15, 0);
-
-        if(entity instanceof ThrowableStunGrenadeEntity)
-        {
-            poseStack.translate(0, entity.getDimensions(Pose.STANDING).height() / 2, 0);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
-            poseStack.translate(0, -entity.getDimensions(Pose.STANDING).height() / 2, 0);
-        }
 
         poseStack.translate(0.0, 0.5, 0.0);
 
