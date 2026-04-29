@@ -1,0 +1,35 @@
+{
+  "type": "smoking_iron:workbench",
+  "materials": [
+    {
+      "count": 6,
+      "ingredient": {
+        "tag": "c:nuggets/iron"
+      }
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:copper_ingot"
+      }
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:gold_ingot"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:gunpowders"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:dusts/redstone"
+      }
+    }
+  ],
+  "result": {
+    "count": 8,
+    "id": "smoking_iron:shell"
+  }
+}

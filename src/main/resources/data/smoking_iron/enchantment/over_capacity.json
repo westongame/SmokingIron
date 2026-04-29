@@ -1,0 +1,13 @@
+{
+  "description": {"translate": "enchantment.smoking_iron.over_capacity"},
+  "supported_items": "#smoking_iron:enchantable/gun",
+  "primary_items": "#smoking_iron:enchantable/gun",
+  "max_level": 3,
+  "weight": 2,
+  "min_cost": {"base": 5, "per_level_above_first": 10},
+  "max_cost": {"base": 51, "per_level_above_first": 10},
+  "anvil_cost": 4,
+  "slots": ["mainhand"],
+  "effects": {},
+  "exclusive_set": "#smoking_iron:exclusive_set/weapon"
+}

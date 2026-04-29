@@ -1,0 +1,376 @@
+package com.westongame.smokingiron;
+
+import com.westongame.smokingiron.client.SwayType;
+import com.westongame.smokingiron.client.render.crosshair.Crosshair;
+import com.westongame.smokingiron.client.screen.ButtonAlignment;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.Collections;
+import java.util.List;
+
+public class Config
+{
+    /**
+     * Client related config options
+     */
+    public static class Client
+    {
+        public final Sounds sounds;
+        public final Display display;
+        public final Particle particle;
+        public final Controls controls;
+        public final ModConfigSpec.BooleanValue hideConfigButton;
+        public final ModConfigSpec.EnumValue<ButtonAlignment> buttonAlignment;
+
+        public Client(ModConfigSpec.Builder builder)
+        {
+            builder.push("client");
+            {
+                this.sounds = new Sounds(builder);
+                this.display = new Display(builder);
+                this.particle = new Particle(builder);
+                this.controls = new Controls(builder);
+            }
+            builder.pop();
+            this.hideConfigButton = builder.comment("If enabled, hides the config button from the backpack screen").define("hideConfigButton", false);
+            this.buttonAlignment = builder.comment("The alignment of the buttons in the backpack inventory screen").defineEnum("buttonAlignment", ButtonAlignment.RIGHT);
+        }
+    }
+
+    /**
+     * Sound related config options
+     */
+    public static class Sounds
+    {
+        public final ModConfigSpec.BooleanValue playSoundWhenHeadshot;
+        public final ModConfigSpec.ConfigValue<String> headshotSound;
+        public final ModConfigSpec.BooleanValue playSoundWhenCritical;
+        public final ModConfigSpec.ConfigValue<String> criticalSound;
+        public final ModConfigSpec.DoubleValue impactSoundDistance;
+
+        public Sounds(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Control sounds triggered by guns").push("sounds");
+            {
+                this.playSoundWhenHeadshot = builder.comment("If true, a sound will play when you successfully hit a headshot on a entity with a gun").define("playSoundWhenHeadshot", true);
+                this.headshotSound = builder.comment("The sound to play when a headshot occurs").define("headshotSound", "minecraft:entity.player.attack.knockback");
+                this.playSoundWhenCritical = builder.comment("If true, a sound will play when you successfully hit a critical on a entity with a gun").define("playSoundWhenCritical", true);
+                this.criticalSound = builder.comment("The sound to play when a critical occurs").define("criticalSound", "minecraft:entity.player.attack.crit");
+                this.impactSoundDistance = builder.comment("The maximum distance impact sounds from bullet can be heard").defineInRange("impactSoundDistance", 32.0, 0.0, 32.0);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Display related config options
+     */
+    public static class Display
+    {
+        public final ModConfigSpec.BooleanValue oldAnimations;
+        public final ModConfigSpec.ConfigValue<String> crosshair;
+        public final ModConfigSpec.BooleanValue cooldownIndicator;
+        public final ModConfigSpec.BooleanValue weaponSway;
+        public final ModConfigSpec.DoubleValue swaySensitivity;
+        public final ModConfigSpec.EnumValue<SwayType> swayType;
+        public final ModConfigSpec.BooleanValue cameraRollEffect;
+        public final ModConfigSpec.DoubleValue cameraRollAngle;
+        public final ModConfigSpec.BooleanValue restrictCameraRollToWeapons;
+        public final ModConfigSpec.BooleanValue sprintAnimation;
+        public final ModConfigSpec.DoubleValue bobbingIntensity;
+
+        public Display(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Configuration for display related options").push("display");
+            {
+                this.oldAnimations = builder.comment("If true, uses the old animation poses for weapons. This is only for nostalgic reasons and not recommended to switch back.").define("oldAnimations", false);
+                this.crosshair = builder.comment("The custom crosshair to use for weapons. Go to (Options > Controls > Mouse Settings > Crosshair) in game to change this!").define("crosshair", Crosshair.DEFAULT.getLocation().toString());
+                this.cooldownIndicator = builder.comment("If enabled, renders a cooldown indicator to make it easier to learn when you fire again.").define("cooldownIndicator", true);
+                this.weaponSway = builder.comment("If enabled, the weapon will sway when the player moves their look direction. This does not affect aiming and is only visual.").define("weaponSway", true);
+                this.swaySensitivity = builder.comment("The sensistivity of the visual weapon sway when the player moves their look direciton. The higher the value the more sway.").defineInRange("swaySensitivity", 0.3, 0.0, 1.0);
+                this.swayType = builder.comment("The animation to use for sway. Directional follows the camera better while Drag is more immersive").defineEnum("swayType", SwayType.DRAG);
+                this.cameraRollEffect = builder.comment("If enabled, the camera will roll when strafing while holding a gun. This creates a more immersive feeling.").define("cameraRollEffect", true);
+                this.cameraRollAngle = builder.comment("When Camera Roll Effect is enabled, this is the absolute maximum angle the roll on the camera can approach.").defineInRange("cameraRollAngle", 1.5F, 0F, 45F);
+                this.restrictCameraRollToWeapons = builder.comment("When enabled, the Camera Roll Effect is only applied when holding a weapon.").define("restrictCameraRollToWeapons", true);
+                this.sprintAnimation = builder.comment("Enables the sprinting animation on weapons for better immersion. This only applies to weapons that support a sprinting animation.").define("sprintingAnimation", true);
+                this.bobbingIntensity = builder.comment("The intensity of the custom bobbing animation while holding a gun").defineInRange("bobbingIntensity", 1.0, 0.0, 2.0);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Particle related config options
+     */
+    public static class Particle
+    {
+        public final ModConfigSpec.IntValue bulletHoleLifeMin;
+        public final ModConfigSpec.IntValue bulletHoleLifeMax;
+        public final ModConfigSpec.DoubleValue bulletHoleFadeThreshold;
+        public final ModConfigSpec.BooleanValue enableBlood;
+        public final ModConfigSpec.DoubleValue impactParticleDistance;
+
+        public Particle(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to particles").push("particle");
+            {
+                this.bulletHoleLifeMin = builder.comment("The minimum duration in ticks before bullet holes will disappear").defineInRange("bulletHoleLifeMin", 150, 0, Integer.MAX_VALUE);
+                this.bulletHoleLifeMax = builder.comment("The maximum duration in ticks before bullet holes will disappear").defineInRange("bulletHoleLifeMax", 200, 0, Integer.MAX_VALUE);
+                this.bulletHoleFadeThreshold = builder.comment("The percentage of the maximum life that must pass before particles begin fading away. 0 makes the particles always fade and 1 removes facing completely").defineInRange("bulletHoleFadeThreshold", 0.98, 0, 1.0);
+                this.enableBlood = builder.comment("If true, blood will will spawn from entities that are hit from a projectile").define("enableBlood", false);
+                this.impactParticleDistance = builder.comment("The maximum distance impact particles can be seen from the player").defineInRange("impactParticleDistance", 32.0, 0.0, 64.0);
+            }
+            builder.pop();
+        }
+    }
+
+    public static class Controls
+    {
+        public final ModConfigSpec.DoubleValue aimDownSightSensitivity;
+        public final ModConfigSpec.BooleanValue flipControls;
+
+        public Controls(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to controls").push("controls");
+            {
+                this.aimDownSightSensitivity = builder.comment("A value to multiple the mouse sensitivity by when aiming down weapon sights. Go to (Options > Controls > Mouse Settings > ADS Sensitivity) in game to change this!").defineInRange("aimDownSightSensitivity", 0.75, 0.0, 1.0);
+                this.flipControls = builder.comment("When enabled, switches the shoot and aim controls of weapons. Due to technical reasons, you won't be able to use offhand items if you enable this setting.").define("flipControls", false);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Common config options
+     */
+    public static class Common
+    {
+        public final Gameplay gameplay;
+        public final Network network;
+        public final AggroMobs aggroMobs;
+        public final Grenades grenades;
+        public final ProjectileSpread projectileSpread;
+
+        public Common(ModConfigSpec.Builder builder)
+        {
+            builder.push("common");
+            {
+                this.gameplay = new Gameplay(builder);
+                this.network = new Network(builder);
+                this.aggroMobs = new AggroMobs(builder);
+                this.grenades = new Grenades(builder);
+                this.projectileSpread = new ProjectileSpread(builder);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Gameplay related config options
+     */
+    public static class Gameplay
+    {
+        public final Griefing griefing;
+        public final ModConfigSpec.DoubleValue growBoundingBoxAmount;
+        public final ModConfigSpec.BooleanValue enableHeadShots;
+        public final ModConfigSpec.DoubleValue headShotDamageMultiplier;
+        public final ModConfigSpec.DoubleValue criticalDamageMultiplier;
+        public final ModConfigSpec.BooleanValue ignoreLeaves;
+        public final ModConfigSpec.BooleanValue enableKnockback;
+        public final ModConfigSpec.DoubleValue knockbackStrength;
+        public final ModConfigSpec.BooleanValue improvedHitboxes;
+        public final ModConfigSpec.BooleanValue projectileSlowDownInFluids;
+
+        public Gameplay(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to gameplay").push("gameplay");
+            {
+                this.griefing = new Griefing(builder);
+                this.growBoundingBoxAmount = builder.comment("The extra amount to expand an entity's bounding box when checking for projectile collision. Setting this value higher will make it easier to hit entities").defineInRange("growBoundingBoxAmount", 0.3, 0.0, 1.0);
+                this.enableHeadShots = builder.comment("Enables the check for head shots for players. Projectiles that hit the head of a player will have increased damage.").define("enableHeadShots", true);
+                this.headShotDamageMultiplier = builder.comment("The value to multiply the damage by if projectile hit the players head").defineInRange("headShotDamageMultiplier", 2.0, 1.0, Double.MAX_VALUE);
+                this.criticalDamageMultiplier = builder.comment("The value to multiply the damage by if projectile is a critical hit").defineInRange("criticalDamageMultiplier", 1.5, 1.0, Double.MAX_VALUE);
+                this.ignoreLeaves = builder.comment("If true, projectiles will ignore leaves when checking for collision").define("ignoreLeaves", true);
+                this.enableKnockback = builder.comment("If true, projectiles will cause knockback when an entity is hit. By default this is set to true to match the behaviour of Minecraft.").define("enableKnockback", true);
+                this.knockbackStrength = builder.comment("Sets the strength of knockback when shot by a bullet projectile. Knockback must be enabled for this to take effect. If value is equal to zero, knockback will use default minecraft value").defineInRange("knockbackStrength", 0.15, 0.0, 1.0);
+                this.improvedHitboxes = builder.comment("If true, improves the accuracy of weapons by considering the ping of the player. This has no affect on singleplayer. This will add a little overhead if enabled.").define("improvedHitboxes", false);
+                this.projectileSlowDownInFluids = builder.comment("If true, the projectiles will slow down in the fluids.").define("projectileSlowDownInFluids", true);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Gun griefing related config options
+     */
+    public static class Griefing
+    {
+        public final ModConfigSpec.BooleanValue enableGlassBreaking;
+        public final ModConfigSpec.BooleanValue fragileBlockDrops;
+        public final ModConfigSpec.DoubleValue fragileBaseBreakChance;
+        public final ModConfigSpec.BooleanValue setFireToBlocks;
+
+        public Griefing(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties related to gun griefing").push("griefing");
+            {
+                this.enableGlassBreaking = builder.comment("If enabled, allows guns to shoot out glass and other fragile objects").define("enableGlassBreaking", true);
+                this.fragileBlockDrops = builder.comment("If enabled, fragile blocks will drop their loot when broken").define("fragileBlockDrops", true);
+                this.fragileBaseBreakChance = builder.comment("The base chance that a fragile block is broken when impacted by a bullet. The hardness of a block will scale this value; the harder the block, the lower the final calculated chance will be.").defineInRange("fragileBlockBreakChance", 1.0, 0.0, 1.0);
+                this.setFireToBlocks = builder.comment("If true, allows guns enchanted with Fire Starter to light and spread fires on blocks").define("setFireToBlocks", true);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Network related config options
+     */
+    public static class Network
+    {
+        public final ModConfigSpec.DoubleValue projectileTrackingRange;
+
+        public Network(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to network").push("network");
+            {
+                this.projectileTrackingRange = builder.comment("The distance players need to be within to be able to track new projectiles trails. Higher values means you can see projectiles from that start from further away.").defineInRange("projectileTrackingRange", 200.0, 1, Double.MAX_VALUE);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Mob aggression related config options
+     */
+    public static class AggroMobs
+    {
+        public final ModConfigSpec.BooleanValue enabled;
+        public final ModConfigSpec.BooleanValue angerHostileMobs;
+        public final ModConfigSpec.DoubleValue unsilencedRange;
+        public final ModConfigSpec.ConfigValue<List<? extends String>> exemptEntities;
+
+        public AggroMobs(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to mob aggression").push("aggro_mobs");
+            {
+                this.enabled = builder.comment("If true, nearby mobs are angered and/or scared by the firing of guns.").define("enabled", true);
+                this.angerHostileMobs = builder.comment("If true, in addition to causing peaceful mobs to panic, firing a gun will also cause nearby hostile mobs to target the shooter.").define("angerHostileMobs", true);
+                this.unsilencedRange = builder.comment("Any mobs within a sphere of this radius will aggro on the shooter of an unsilenced gun.").defineInRange("unsilencedRange", 20.0, 0.0, Double.MAX_VALUE);
+                this.exemptEntities = builder.comment("Any mobs of defined will not aggro on shooters").defineList("exemptMobs", Collections.emptyList(), o -> true);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Grenade related config options
+     */
+    public static class Grenades
+    {
+        public final ModConfigSpec.BooleanValue enableBlockRemoval;
+        public final ModConfigSpec.DoubleValue explosionRadius;
+
+        public Grenades(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to grenades").push("grenades");
+            {
+                this.enableBlockRemoval = builder.comment("If enabled, allows block removal on explosions").define("enableBlockRemoval", false);
+                this.explosionRadius = builder.comment("The max distance which the explosion is effective to").defineInRange("explosionRadius", 5.0, 0.0, Double.MAX_VALUE);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Projectile spread config options
+     */
+    public static class ProjectileSpread
+    {
+        public final ModConfigSpec.IntValue spreadThreshold;
+        public final ModConfigSpec.IntValue maxCount;
+
+        public ProjectileSpread(ModConfigSpec.Builder builder)
+        {
+            builder.comment("Properties relating to projectile spread").push("projectile_spread");
+            {
+                this.spreadThreshold = builder.comment("The amount of time in milliseconds before logic to apply spread is skipped. The value indicates a reasonable amount of time before a weapon is considered stable again.").defineInRange("spreadThreshold", 300, 0, 1000);
+                this.maxCount = builder.comment("The amount of times a player has to shoot within the spread threshold before the maximum amount of spread is applied. Setting the value higher means it will take longer for the spread to be applied.").defineInRange("maxCount", 10, 1, Integer.MAX_VALUE);
+            }
+            builder.pop();
+        }
+    }
+
+    /**
+     * Server related config options
+     */
+    public static class Server
+    {
+        public final ModConfigSpec.DoubleValue gunShotMaxDistance;
+        public final ModConfigSpec.DoubleValue reloadMaxDistance;
+        public final ModConfigSpec.BooleanValue enableCameraRecoil;
+        public final ModConfigSpec.IntValue cooldownThreshold;
+        public final Experimental experimental;
+
+        public Server(ModConfigSpec.Builder builder)
+        {
+            builder.push("server");
+            {
+                builder.comment("Audio properties").push("audio");
+                {
+                    this.gunShotMaxDistance = builder.comment("The maximum distance weapons can be heard by players.").defineInRange("gunShotMaxDistance", 100, 0, Double.MAX_VALUE);
+                    this.reloadMaxDistance = builder.comment("The maximum distance reloading can be heard by players.").defineInRange("reloadMaxDistance", 24, 0, Double.MAX_VALUE);
+                }
+                builder.pop();
+
+                this.enableCameraRecoil = builder.comment("If true, enables camera recoil when firing a weapon").define("enableCameraRecoil", true);
+                this.cooldownThreshold = builder.comment("The maximum amount of cooldown time remaining before the server will accept another shoot packet from a client. This allows for a litle slack since the server may be lagging").defineInRange("cooldownThreshold", 0, 75, 1000);
+
+                this.experimental = new Experimental(builder);
+            }
+            builder.pop();
+        }
+
+        public static class Experimental
+        {
+            public final ModConfigSpec.BooleanValue forceDyeableAttachments;
+
+            public Experimental(ModConfigSpec.Builder builder)
+            {
+                builder.push("experimental");
+                this.forceDyeableAttachments = builder.comment("Forces all attachments to be dyeable regardless if they have an affect on the model. This is useful if your server uses custom models for attachments and the models have dyeable elements").define("forceDyeableAttachments", false);
+                builder.pop();
+            }
+        }
+    }
+
+    static final ModConfigSpec clientSpec;
+    public static final Config.Client CLIENT;
+
+    static final ModConfigSpec commonSpec;
+    public static final Config.Common COMMON;
+
+    static final ModConfigSpec serverSpec;
+    public static final Config.Server SERVER;
+
+    static
+    {
+        final Pair<Client, ModConfigSpec> clientSpecPair = new ModConfigSpec.Builder().configure(Config.Client::new);
+        clientSpec = clientSpecPair.getRight();
+        CLIENT = clientSpecPair.getLeft();
+
+        final Pair<Common, ModConfigSpec> commonSpecPair = new ModConfigSpec.Builder().configure(Common::new);
+        commonSpec = commonSpecPair.getRight();
+        COMMON = commonSpecPair.getLeft();
+
+        final Pair<Server, ModConfigSpec> serverSpecPair = new ModConfigSpec.Builder().configure(Server::new);
+        serverSpec = serverSpecPair.getRight();
+        SERVER = serverSpecPair.getLeft();
+    }
+
+    public static void saveClientConfig()
+    {
+        clientSpec.save();
+    }
+}

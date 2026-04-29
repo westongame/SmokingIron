@@ -1,0 +1,26 @@
+{
+  "type": "smoking_iron:workbench",
+  "materials": [
+    {
+      "count": 6,
+      "ingredient": {
+        "tag": "c:nuggets/iron"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "tag": "c:gems/amethyst"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:dyes/black"
+      }
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "smoking_iron:long_scope"
+  }
+}

@@ -1,0 +1,8 @@
+{
+    "variants": {
+        "facing=north": { "model": "smoking_iron:block/workbench", "y": 0   },
+        "facing=east":  { "model": "smoking_iron:block/workbench", "y": 90  },
+        "facing=south": { "model": "smoking_iron:block/workbench", "y": 180 },
+        "facing=west":  { "model": "smoking_iron:block/workbench", "y": 270 }
+    }
+}

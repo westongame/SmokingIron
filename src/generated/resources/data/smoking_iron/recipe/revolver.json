@@ -1,0 +1,27 @@
+{
+  "type": "smoking_iron:workbench",
+  "materials": [
+    {
+      "count": 8,
+      "ingredient": {
+        "tag": "c:ingots/iron"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:copper_ingot"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "tag": "minecraft:planks"
+      }
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "smoking_iron:revolver"
+  }
+}

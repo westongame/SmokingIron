@@ -1,0 +1,30 @@
+{
+   "item.pistol.reload":                { "subtitle": "subtitle.smoking_iron.reload",         "sounds": [{ "name": "smoking_iron:item/pistol/reload" }]},
+   "item.grenade.pin":                  { "subtitle": "subtitle.smoking_iron.grenade.pin",    "sounds": [{ "name": "smoking_iron:item/grenade/pin" }]},
+   "ui.weapon.attach":                  { "subtitle": "subtitle.smoking_iron.attach",         "sounds": [{ "name": "smoking_iron:ui/weapon/attach" }]},
+
+   "item.revolver.fire":                { "subtitle": "subtitle.smoking_iron.fire",           "sounds": [{ "name": "smoking_iron:item/revolver/fire" }, { "name": "smoking_iron:item/revolver/fire2" }, { "name": "smoking_iron:item/revolver/fire3" }]},
+   "item.revolver.enchanted_fire":      { "subtitle": "subtitle.smoking_iron.fire.enchanted", "sounds": [{ "name": "smoking_iron:item/revolver/enchanted_fire" }, { "name": "smoking_iron:item/revolver/enchanted_fire2" }, { "name": "smoking_iron:item/revolver/enchanted_fire3" }]},
+   "item.revolver.silenced_fire":       { "subtitle": "subtitle.smoking_iron.fire.silenced",  "sounds": [{ "name": "smoking_iron:item/revolver/silenced_fire" }]},
+   "item.revolver.cock":                { "subtitle": "subtitle.smoking_iron.cock",           "sounds": [{ "name": "smoking_iron:item/revolver/cock" }]},
+
+   "item.lever_action_rifle.fire":          { "subtitle": "subtitle.smoking_iron.fire",           "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/fire" }, { "name": "smoking_iron:item/lever_action_rifle/fire2" }]},
+   "item.lever_action_rifle.fire_lever":    { "subtitle": "subtitle.smoking_iron.fire",           "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/fire_lever" }]},
+   "item.lever_action_rifle.enchanted_fire":      { "subtitle": "subtitle.smoking_iron.fire.enchanted", "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/enchanted_fire" }, { "name": "smoking_iron:item/lever_action_rifle/enchanted_fire2" }]},
+   "item.lever_action_rifle.enchanted_fire_lever": { "subtitle": "subtitle.smoking_iron.fire.enchanted", "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/enchanted_fire_lever" }]},
+   "item.lever_action_rifle.silenced_fire":       { "subtitle": "subtitle.smoking_iron.fire.silenced",  "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/silenced_fire" }]},
+   "item.lever_action_rifle.silenced_fire_lever": { "subtitle": "subtitle.smoking_iron.fire.silenced",  "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/silenced_fire" }]},
+   "item.lever_action_rifle.cock":          { "subtitle": "subtitle.smoking_iron.cock",           "sounds": [{ "name": "smoking_iron:item/lever_action_rifle/cock" }]},
+
+   "item.hunting_rifle.fire":           { "subtitle": "subtitle.smoking_iron.fire",           "sounds": [{ "name": "smoking_iron:item/hunting_rifle/fire" }]},
+   "item.hunting_rifle.enchanted_fire": { "subtitle": "subtitle.smoking_iron.fire.enchanted", "sounds": [{ "name": "smoking_iron:item/hunting_rifle/enchanted_fire" }]},
+   "item.hunting_rifle.silenced_fire":  { "subtitle": "subtitle.smoking_iron.fire.silenced",  "sounds": [{ "name": "smoking_iron:item/hunting_rifle/fire" }]},
+   "item.hunting_rifle.cock":           { "subtitle": "subtitle.smoking_iron.cock",           "sounds": [{ "name": "smoking_iron:item/hunting_rifle/breech_close" }]},
+
+   "item.double_barreled.fire":         { "subtitle": "subtitle.smoking_iron.fire",           "sounds": [{ "name": "smoking_iron:item/double_barreled/fire" }]},
+   "item.double_barreled.enchanted_fire": { "subtitle": "subtitle.smoking_iron.fire.enchanted", "sounds": [{ "name": "smoking_iron:item/double_barreled/enchanted_fire" }]},
+   "item.double_barreled.cock":         { "subtitle": "subtitle.smoking_iron.cock",           "sounds": [{ "name": "smoking_iron:item/double_barreled/cock" }]},
+
+   "item.nzge_rifle.reload":            { "subtitle": "subtitle.smoking_iron.reload",         "sounds": [{ "name": "smoking_iron:item/nzge_rifle/reload" }]},
+   "item.nzge_shotgun.reload":          { "subtitle": "subtitle.smoking_iron.reload",         "sounds": [{ "name": "smoking_iron:item/nzge_shotgun/reload" }]}
+}

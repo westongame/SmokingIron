@@ -1,14 +1,14 @@
 {
   "replace": false,
   "values": [
-    "cgm:quick_hands",
-    "cgm:trigger_finger",
-    "cgm:lightweight",
-    "cgm:collateral",
-    "cgm:over_capacity",
-    "cgm:reclaimed",
-    "cgm:accelerator",
-    "cgm:puncturing",
-    "cgm:fire_starter"
+    "smoking_iron:quick_hands",
+    "smoking_iron:trigger_finger",
+    "smoking_iron:lightweight",
+    "smoking_iron:collateral",
+    "smoking_iron:over_capacity",
+    "smoking_iron:reclaimed",
+    "smoking_iron:accelerator",
+    "smoking_iron:puncturing",
+    "smoking_iron:fire_starter"
   ]
 }

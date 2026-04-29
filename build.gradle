@@ -18,7 +18,7 @@ sourceSets.main.resources {
 }
 
 base {
-    archivesName = 'CGM-Unofficial'
+    archivesName = 'SmokingIron'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)

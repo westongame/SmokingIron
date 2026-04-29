@@ -1,0 +1,30 @@
+{
+  "type": "smoking_iron:workbench",
+  "materials": [
+    {
+      "count": 4,
+      "ingredient": {
+        "tag": "c:nuggets/iron"
+      }
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:gold_ingot"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:gunpowders"
+      }
+    },
+    {
+      "ingredient": {
+        "tag": "c:dusts/redstone"
+      }
+    }
+  ],
+  "result": {
+    "count": 8,
+    "id": "smoking_iron:advanced_bullet"
+  }
+}

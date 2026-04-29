@@ -1,0 +1,13 @@
+{
+  "values": [
+    "smoking_iron:pistol",
+    "smoking_iron:shotgun",
+    "smoking_iron:rifle",
+    "smoking_iron:assault_rifle",
+    "smoking_iron:machine_pistol",
+    "smoking_iron:heavy_rifle",
+    "smoking_iron:mini_gun",
+    "smoking_iron:grenade_launcher",
+    "smoking_iron:bazooka"
+  ]
+}

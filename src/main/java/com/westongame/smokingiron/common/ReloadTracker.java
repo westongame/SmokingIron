@@ -1,0 +1,173 @@
+package com.westongame.smokingiron.common;
+
+import com.mrcrayfish.framework.api.network.LevelLocation;
+import com.westongame.smokingiron.Config;
+import com.westongame.smokingiron.Reference;
+import com.westongame.smokingiron.init.ModDataComponents;
+import com.westongame.smokingiron.init.ModSyncedDataKeys;
+import com.westongame.smokingiron.item.GunItem;
+import com.westongame.smokingiron.network.PacketHandler;
+import com.westongame.smokingiron.network.message.S2CMessageGunSound;
+import com.westongame.smokingiron.util.GunEnchantmentHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+
+/**
+ * Author: MrCrayfish
+ */
+@SuppressWarnings("unused")
+@EventBusSubscriber(modid = Reference.MOD_ID)
+public class ReloadTracker
+{
+    private static final Map<Player, ReloadTracker> RELOAD_TRACKER_MAP = new WeakHashMap<>();
+
+    private final int startTick;
+    private final int slot;
+    private final ItemStack stack;
+    private final Gun gun;
+
+    private ReloadTracker(Player player)
+    {
+        this.startTick = player.tickCount;
+        this.slot = player.getInventory().selected;
+        this.stack = player.getInventory().getSelected();
+        this.gun = ((GunItem) stack.getItem()).getModifiedGun(stack);
+    }
+
+    /**
+     * Tests if the current item the player is holding is the same as the one being reloaded
+     *
+     * @param player the player to check
+     * @return True if it's the same weapon and slot
+     */
+    private boolean isSameWeapon(Player player)
+    {
+        return !this.stack.isEmpty() && player.getInventory().selected == this.slot && player.getInventory().getSelected() == this.stack;
+    }
+
+    /**
+     * @return
+     */
+    private boolean isWeaponFull()
+    {
+        return this.stack.getOrDefault(ModDataComponents.AMMO_COUNT.get(), 0) >= GunEnchantmentHelper.getAmmoCapacity(this.stack, this.gun);
+    }
+
+    private boolean hasNoAmmo(Player player)
+    {
+        return Gun.findAmmo(player, this.gun.getProjectile().getItem()).stack().isEmpty();
+    }
+
+    private boolean canReload(Player player)
+    {
+        int deltaTicks = player.tickCount - this.startTick;
+        int interval = GunEnchantmentHelper.getReloadInterval(this.stack);
+        return deltaTicks > 0 && deltaTicks % interval == 0;
+    }
+
+    private void increaseAmmo(Player player)
+    {
+        AmmoContext context = Gun.findAmmo(player, this.gun.getProjectile().getItem());
+        ItemStack ammo = context.stack();
+        if(!ammo.isEmpty())
+        {
+            int amount = Math.min(ammo.getCount(), this.gun.getGeneral().getReloadAmount());
+            int currentAmmo = this.stack.getOrDefault(ModDataComponents.AMMO_COUNT.get(), 0);
+            int maxAmmo = GunEnchantmentHelper.getAmmoCapacity(this.stack, this.gun);
+            amount = Math.min(amount, maxAmmo - currentAmmo);
+            this.stack.set(ModDataComponents.AMMO_COUNT.get(), currentAmmo + amount);
+            ammo.shrink(amount);
+            // Trigger the post action on ammo consumption, like Container#setChanged.
+            context.onConsume().accept(ammo);
+        }
+
+        ResourceLocation reloadSound = this.gun.getSounds().getReload();
+        if(reloadSound != null)
+        {
+            double radius = Config.SERVER.reloadMaxDistance.get();
+            double soundX = player.getX();
+            double soundY = player.getY() + 1.0;
+            double soundZ = player.getZ();
+            S2CMessageGunSound message = new S2CMessageGunSound(reloadSound, SoundSource.PLAYERS, (float) soundX, (float) soundY, (float) soundZ, 1.0F, 1.0F, player.getId(), false, true);
+            PacketHandler.getPlayChannel().sendToNearbyPlayers(() -> LevelLocation.create((net.minecraft.server.level.ServerLevel) player.level(), soundX, soundY, soundZ, radius), message);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(PlayerTickEvent.Pre event)
+    {
+        if(!event.getEntity().level().isClientSide)
+        {
+            Player player = event.getEntity();
+            if(ModSyncedDataKeys.RELOADING.getValue(player))
+            {
+                if(!RELOAD_TRACKER_MAP.containsKey(player))
+                {
+                    if(!(player.getInventory().getSelected().getItem() instanceof GunItem))
+                    {
+                        ModSyncedDataKeys.RELOADING.setValue(player, false);
+                        return;
+                    }
+                    RELOAD_TRACKER_MAP.put(player, new ReloadTracker(player));
+                }
+                ReloadTracker tracker = RELOAD_TRACKER_MAP.get(player);
+                if(!tracker.isSameWeapon(player) || tracker.isWeaponFull() || tracker.hasNoAmmo(player))
+                {
+                    RELOAD_TRACKER_MAP.remove(player);
+                    ModSyncedDataKeys.RELOADING.setValue(player, false);
+                    return;
+                }
+                if(tracker.canReload(player))
+                {
+                    tracker.increaseAmmo(player);
+                    if(tracker.isWeaponFull() || tracker.hasNoAmmo(player))
+                    {
+                        RELOAD_TRACKER_MAP.remove(player);
+                        ModSyncedDataKeys.RELOADING.setValue(player, false);
+
+                        final Player finalPlayer = player;
+                        final Gun gun = tracker.gun;
+                        DelayedTask.runAfter(4, () ->
+                        {
+                            ResourceLocation cockSound = gun.getSounds().getCock();
+                            if(cockSound != null && finalPlayer.isAlive())
+                            {
+                                double soundX = finalPlayer.getX();
+                                double soundY = finalPlayer.getY() + 1.0;
+                                double soundZ = finalPlayer.getZ();
+                                double radius = Config.SERVER.reloadMaxDistance.get();
+                                S2CMessageGunSound messageSound = new S2CMessageGunSound(cockSound, SoundSource.PLAYERS, (float) soundX, (float) soundY, (float) soundZ, 1.0F, 1.0F, finalPlayer.getId(), false, true);
+                                PacketHandler.getPlayChannel().sendToNearbyPlayers(() -> LevelLocation.create((net.minecraft.server.level.ServerLevel) finalPlayer.level(), soundX, soundY, soundZ, radius), messageSound);
+                            }
+                        });
+                    }
+                }
+            }
+            else if(RELOAD_TRACKER_MAP.containsKey(player))
+            {
+                RELOAD_TRACKER_MAP.remove(player);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(PlayerEvent.PlayerLoggedOutEvent event)
+    {
+        MinecraftServer server = event.getEntity().getServer();
+        if(server != null)
+        {
+            server.execute(() -> RELOAD_TRACKER_MAP.remove(event.getEntity()));
+        }
+    }
+}

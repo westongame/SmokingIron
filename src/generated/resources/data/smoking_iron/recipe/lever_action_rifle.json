@@ -1,0 +1,27 @@
+{
+  "type": "smoking_iron:workbench",
+  "materials": [
+    {
+      "count": 14,
+      "ingredient": {
+        "tag": "c:ingots/iron"
+      }
+    },
+    {
+      "count": 2,
+      "ingredient": {
+        "item": "minecraft:copper_ingot"
+      }
+    },
+    {
+      "count": 4,
+      "ingredient": {
+        "tag": "minecraft:planks"
+      }
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "smoking_iron:lever_action_rifle"
+  }
+}

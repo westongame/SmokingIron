@@ -6,12 +6,12 @@ license="${mod_license}"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-logoFile="cgm_banner.png"
-authors="MrCrayfish"
-description="MrCrayfish's Gun Mod adds in simple and straight forward weapons into Minecraft."
+authors="westongame"
+credits="Forked from MrCrayfish's Gun Mod by MrCrayfish. 3D models from NineZero's Gun Expansion by zaeonNineZero."
+description="A Wild West firearms mod for Minecraft. Forked from MrCrayfish's Gun Mod."
 
 [[mixins]]
-config="cgm.mixins.json"
+config="smoking_iron.mixins.json"
 
 [[dependencies.${mod_id}]]
     modId="neoforge"
@@ -43,6 +43,4 @@ config="cgm.mixins.json"
     side="CLIENT"
 
 [modproperties.${mod_id}]
-    catalogueImageIcon="cgm_icon.png"
-    catalogueBackground="cgm_background.png"
     configuredBackground="minecraft:textures/block/stone_bricks.png"

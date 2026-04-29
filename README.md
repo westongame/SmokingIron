@@ -1,36 +1,19 @@
-![Gun Banner](https://i.imgur.com/5FM6YR7.png)
+# Smoking Iron
 
-# MrCrayfish's Gun Mod — Unofficial NeoForge 1.21.1 Port
+> *A Wild West firearms mod for Minecraft*
 
-> **This is not an official release.** The original mod is made by [MrCrayfish](https://github.com/MrCrayfish). This fork is a community-driven AI-assisted port.
+**Smoking Iron** brings the firearms of the American frontier to Minecraft — Colt Peacemaker single-action revolvers, Winchester 1873 lever-action rifles, Sharps .50 buffalo guns, coach shotguns, and dynamite.
 
-MrCrayfish's Gun Mod is a new and exciting weapon mod with a unique vision. Adding nine weapons, all can be highly customised to create your own unique variant. Using attachments and enchantments, you can increase the stats of a weapon to create an even more powerful version. Dyes can be used to change the colour of any weapon and attachment. This mod also adds grenades and stun grenades!
+## Requirements
 
-![Break](https://i.imgur.com/NnYcCMD.png)
+Currently available for **NeoForge 1.21.1**. Port plans for other loaders/versions are open — see Issues if you want to help.
 
-### Requirements
-* Minecraft **1.21.1**
-* **NeoForge** 21.1.222+
-* [Framework](https://www.curseforge.com/minecraft/mc-mods/framework) (NeoForge 1.21.1 version)
+## Credits
 
-### Features:
-* Nine unique weapons: Pistol, Shotgun, Rifle, Grenade Launcher, Bazooka, Mini Gun, Assault Rifle, Machine Pistol and Heavy Rifle
-* Attachments: scopes, stocks, grips, and silencers
-* Nine gun enchantments (data-driven)
-* Custom sounds and animations
-* The ability to headshot any vanilla mob in the game
-* Datapack support for weapon properties
-* JEI integration
+Smoking Iron is a fork of [MrCrayfish's Gun Mod](https://github.com/MrCrayfish/MrCrayfishGunMod) by [MrCrayfish](https://github.com/MrCrayfish), reworked under the Wild West theme.
 
-![Break](https://i.imgur.com/NnYcCMD.png)
-![Weapons](https://i.imgur.com/BmBkvm4.png)
-![Break](https://i.imgur.com/NnYcCMD.png)
+3D gun models (revolver, lever-action rifle, hunting rifle, double-barreled shotgun) are ported from [NineZero's Gun Expansion](https://github.com/zaeonNineZero/NineZero-Gun-Expansion) by [zaeonNineZero](https://github.com/zaeonNineZero).
 
-### Modpack Developers / Server Owners:
-The mod is data driven. To change weapon properties, use a datapack instead of the config file.
+## License
 
-![Break](https://i.imgur.com/NnYcCMD.png)
-
-### Credits
-* [MrCrayfish](https://github.com/MrCrayfish) — original mod author
-* [VulpesStella](https://github.com/VulpesStella) — 1.20.1 unofficial fork
+GPL-3.0

@@ -1,0 +1,47 @@
+package com.westongame.smokingiron.datagen;
+
+import com.google.common.collect.ImmutableList;
+import com.westongame.smokingiron.Reference;
+import com.westongame.smokingiron.init.ModBlocks;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.PackOutput;
+import net.minecraft.data.loot.BlockLootSubProvider;
+import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+public class LootTableGen extends LootTableProvider
+{
+    public LootTableGen(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider)
+    {
+        super(output, Collections.emptySet(), ImmutableList.of(new LootTableProvider.SubProviderEntry(BlockProvider::new, LootContextParamSets.BLOCK)), lookupProvider);
+    }
+
+    private static class BlockProvider extends BlockLootSubProvider
+    {
+        protected BlockProvider(HolderLookup.Provider provider)
+        {
+            super(Set.of(), FeatureFlags.REGISTRY.allFlags(), provider);
+        }
+
+        @Override
+        protected void generate()
+        {
+            this.dropSelf(ModBlocks.WORKBENCH.get());
+        }
+
+        @Override
+        protected Iterable<Block> getKnownBlocks()
+        {
+            return BuiltInRegistries.BLOCK.stream().filter(block -> Reference.MOD_ID.equals(Objects.requireNonNull(BuiltInRegistries.BLOCK.getKey(block)).getNamespace())).collect(Collectors.toSet());
+        }
+    }
+}

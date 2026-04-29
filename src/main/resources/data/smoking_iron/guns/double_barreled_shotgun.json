@@ -1,0 +1,50 @@
+{
+  "general": {
+    "adsSpread": 7.0,
+    "gripType": "smoking_iron:two_handed",
+    "hipSpread": 12.0,
+    "maxAmmo": 2,
+    "projectileAmount": 8,
+    "rate": 12,
+    "recoilAdsReduction": 0.4,
+    "recoilAngle": 14.0,
+    "recoilKick": 4.5,
+    "reloadAmount": 2,
+    "reloadInterval": 20,
+    "spamPenalty": 0.5
+  },
+  "projectile": {
+    "damage": 56.0,
+    "gravity": true,
+    "item": "smoking_iron:shell",
+    "life": 6,
+    "size": 0.5,
+    "speed": 15.0
+  },
+  "sounds": {
+    "fire": "smoking_iron:item.double_barreled.fire",
+    "reload": "smoking_iron:item.nzge_shotgun.reload",
+    "cock": "smoking_iron:item.double_barreled.cock",
+    "silencedFire": "smoking_iron:item.hunting_shotgun.silenced_fire",
+    "enchantedFire": "smoking_iron:item.double_barreled.enchanted_fire"
+  },
+  "display": {
+    "flash": {
+      "yOffset": 3.74,
+      "zOffset": -9
+    }
+  },
+  "modules": {
+    "zoom": {
+      "yOffset": 4.7,
+      "zOffset": 3.2,
+      "fovModifier": 0.85
+    },
+    "attachments": {
+      "scope": {
+        "yOffset": 4.34,
+        "zOffset": 2.0
+      }
+    }
+  }
+}
